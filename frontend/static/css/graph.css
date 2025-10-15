@@ -1,0 +1,55 @@
+/* Graph visualization styles */
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #0f111a;
+  color: #e6e6e6;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+#graph {
+  width: 100vw;
+  height: 100vh;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: #1e222f;
+  color: #e6e6e6;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border: 1px solid #2a3042;
+}
+
+.legend {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  background: #151826;
+  border: 1px solid #2a3042;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.legend .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.badge {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.muted {
+  color: #96a0b5;
+}
