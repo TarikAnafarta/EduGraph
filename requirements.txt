@@ -1,0 +1,28 @@
+# EduGraph - Curriculum Learning Graph Visualization
+# Core dependencies for the Python backend
+
+# Core Python standard library modules are used:
+# - json (for data loading and processing)
+# - pathlib (for file path operations)
+# - html (for HTML escaping)
+# - typing (for type hints)
+
+# No external dependencies required for the core functionality.
+# The project uses only Python standard library modules.
+
+# Optional web framework dependencies (uncomment if needed):
+# Flask>=2.3.0          # For web API integration
+# FastAPI>=0.104.0      # Alternative web framework
+# uvicorn>=0.24.0       # ASGI server for FastAPI
+
+# Development dependencies (uncomment if needed):
+# pytest>=7.4.0         # For testing
+# black>=23.9.0         # Code formatting
+# flake8>=6.1.0         # Linting
+# mypy>=1.6.0           # Type checking
+
+# Frontend visualization uses:
+# - D3.js (included in lib/ directory)
+# - Vis.js (included in lib/ directory) 
+# - Tom Select (included in lib/ directory)
+# - Pure CSS and JavaScript (no build tools required)
