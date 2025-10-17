@@ -1,0 +1,46 @@
+{% load static %}
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Kazanım Öğrenme Grafiği</title>
+  <link rel="stylesheet" href="{% static 'css/graph.css' %}">
+</head>
+<body>
+  <div id="graph"></div>
+  <div class="legend">
+    <div class="row">
+      <span class="badge" style="background:#1976d2"></span> 
+      Konu (başlık)
+    </div>
+    <div class="row">
+      <span class="badge" style="background:#8e24aa"></span> 
+      Grup (başlık)
+    </div>
+    <div class="row">
+      <span class="badge" style="background:#00897b"></span> 
+      Alt Grup (başlık)
+    </div>
+    <div class="row">
+      <span class="badge" style="background:linear-gradient(90deg,#e53935,#ffb300,#00c853)"></span> 
+      Kazanım (renk=başarı)
+    </div>
+    <div class="row muted">
+      Büyüklük: hiyerarşi düzeyi / başarı
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="{% static 'js/graph.js' %}"></script>
+  <script>
+    // Data from backend
+    const NODES = {{ nodes_json|safe }};
+    const LINKS = {{ links_json|safe }};
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeGraph('graph', NODES, LINKS);
+    });
+  </script>
+</body>
+</html>
