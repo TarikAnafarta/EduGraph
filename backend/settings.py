@@ -16,6 +16,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+AUTH_USER_MODEL = 'users.User'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,8 +27,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'backend.artifacts',
+    'backend.users',
 ]
 
 MIDDLEWARE = [
@@ -92,6 +96,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # REST Framework settings
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
@@ -103,3 +114,19 @@ REST_FRAMEWORK = {
 # CORS settings (for development)
 CORS_ALLOW_ALL_ORIGINS = True  # In production, specify allowed origins
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
+CSRF_USE_SESSIONS = False  # Use cookies instead of sessions for CSRF tokens
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Email settings (for development - console backend)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# For production, use:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
+DEFAULT_FROM_EMAIL = 'noreply@edugraph.com'
