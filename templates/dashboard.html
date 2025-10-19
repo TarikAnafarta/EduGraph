@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EduGraph</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-card h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-card p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .feature-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    <nav class="navbar">
+        <h1>EduGraph</h1>
+        <div class="user-info">
+            <span id="user-name">Loading...</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="error-message" class="error-message"></div>
+
+        <div class="welcome-card">
+            <h2>Welcome to EduGraph!</h2>
+            <p>Your educational curriculum visualization platform</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>📊 Visualize Curriculum</h3>
+                <p>Create interactive graphs to visualize curriculum relationships and learning paths.</p>
+                <button class="feature-btn" onclick="window.location.href='/graph'">Explore Graphs</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>📚 Manage Content</h3>
+                <p>Add, edit, and organize your educational content and learning objectives.</p>
+                <button class="feature-btn" onclick="alert('Feature coming soon!')">Manage Content</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>📈 Track Progress</h3>
+                <p>Monitor learning progress and identify areas for improvement.</p>
+                <button class="feature-btn" onclick="alert('Feature coming soon!')">View Analytics</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>⚙️ Settings</h3>
+                <p>Customize your profile and application preferences.</p>
+                <button class="feature-btn" onclick="window.location.href='/profile'">Profile Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get CSRF token from various sources
+        function getCSRFToken() {
+            // Try to get from form field first
+            const tokenField = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenField && tokenField.value) {
+                return tokenField.value;
+            }
+            
+            // Fallback to cookie
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            
+            return '';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        async function loadUserInfo() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/me/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('user-name').textContent = user.name || user.email;
+                } else {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                showError('Failed to load user information');
+            }
+        }
+
+        async function logout() {
+            const token = localStorage.getItem('authToken');
+            
+            try {
+                await fetch('/api/users/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('authToken');
+                window.location.href = '/login';
+            }
+        }
+
+        // Load user info when page loads
+        document.addEventListener('DOMContentLoaded', loadUserInfo);
+    </script>
+</body>
+</html>
