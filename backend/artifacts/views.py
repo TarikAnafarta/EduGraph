@@ -9,12 +9,15 @@ from rest_framework import status
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from pathlib import Path
 import json
 
 from src import GraphGenerator, get_graph_data
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class GraphDataAPIView(APIView):
     """
     API endpoint that returns complete graph data (nodes and links).
@@ -82,6 +85,7 @@ class GraphDataAPIView(APIView):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class GraphNodesAPIView(APIView):
     """
     API endpoint that returns only graph nodes.
@@ -132,6 +136,7 @@ class GraphNodesAPIView(APIView):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class GraphLinksAPIView(APIView):
     """
     API endpoint that returns only graph links.
@@ -174,6 +179,7 @@ class GraphLinksAPIView(APIView):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class GraphStatsAPIView(APIView):
     """
     API endpoint that returns graph statistics.
