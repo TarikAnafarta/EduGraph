@@ -97,6 +97,93 @@ User.objects.create_user(
 - Static files are collected automatically on container startup
 - For production deployment, see [../DOCKER_SETUP.md](../DOCKER_SETUP.md)
 
+## 🧭 Git Flow & Merge Strategy
+
+This section explains our **Git flow process** and the **merge strategy** our development team follows.
+
+### 🌿 Environments Overview
+
+We maintain **two main environments**:
+
+- **`dev`** → The development branch where all new features are tested together. This branch is always **ahead** of production.
+- **`production`** → The stable branch used for **live deployments**.
+
+Every new feature must be developed in its **own branch**, which should be **created from the `dev` branch**.
+
+### 🚀 Standard Git Flow
+
+Follow the steps below when working on a new feature.
+
+1. **Create a new feature branch** from `dev`  
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b <feature-name>
+   ```
+
+2. **Develop your feature**  
+   Work on your implementation and commit regularly.  
+   ```bash
+   git add .
+   git commit -m "Implement <feature-name>"
+   ```
+
+3. **Create a Pull Request (PR)**  
+   Push your branch and open a PR **from your feature branch → `dev`**.  
+   ```bash
+   git push origin <feature-name>
+   ```
+   Then, request a **code review** from another developer.
+
+4. **After approval**, follow the merge strategy below.
+
+### ⚙️ Merge Strategy (Clean History Approach)
+
+We care deeply about maintaining a **clear and linear commit history**.  
+All developers must follow the same merge procedure.
+
+> **Note:** Make sure your branch was originally created from `dev`.
+
+#### Steps
+
+1. Open your terminal in your project directory  
+   ```bash
+   cd <your-project-directory>
+   ```
+
+2. Switch to your feature branch  
+   ```bash
+   git checkout <your-branch-name>
+   ```
+
+3. Rebase your branch with the latest `dev` branch  
+   ```bash
+   git fetch origin
+   git rebase origin/dev
+   ```
+
+4. Push the rebased branch (force push)  
+   ```bash
+   git push -f
+   ```
+
+5. Switch to the `dev` branch  
+   ```bash
+   git checkout dev
+   ```
+
+6. Merge your feature branch into `dev`  
+   ```bash
+   git merge <your-branch-name>
+   ```
+
+7. Push the updated `dev` branch  
+   ```bash
+   git push origin dev
+   ```
+
+After completing these steps, your PR will appear as **fast-forward merged** on GitHub, ensuring a clean project history.
+
 ## Related Documentation
 
 - **[../README.md](../README.md)** - Project overview and quick start
