@@ -24,11 +24,62 @@ EduGraph is a modular system for visualizing curriculum learning graphs with int
 - **Backend**: Django, Django REST Framework
 - **Frontend**: D3.js, Vis.js
 - **Data Format**: JSON
-- **Database**: SQLite (default)
+- **Database**: PostgreSQL (SQLite supported for development)
 
-For detailed setup instructions and API documentation:
-- See `backend/README.md` for backend setup and API details
-- Check `requirements.txt` for Python dependencies
+## Getting Started
+
+### Docker Setup (Recommended)
+
+The easiest way to get started. Docker handles all dependencies and database setup automatically.
+
+**Prerequisites:**
+- Docker Desktop (Windows/Mac) or Docker Engine (Linux)
+- Docker Compose v2.0+
+
+**Quick Start:**
+
+```powershell
+# Copy environment file
+Copy-Item .env.example .env
+
+# Start all services (web + database)
+docker-compose up -d
+
+# Create a superuser for admin access
+docker-compose exec web python manage.py createsuperuser
+```
+
+**Access the application:**
+- Web Application: http://localhost:8000
+- API Endpoints: http://localhost:8000/api/
+- Admin Panel: http://localhost:8000/admin/
+
+For detailed Docker instructions, troubleshooting, and production setup, see **[DOCKER_SETUP.md](DOCKER_SETUP.md)**.
+
+## Documentation
+
+- **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Complete Docker setup, development tools, production deployment, and troubleshooting
+- **[backend/README.md](backend/README.md)** - Backend API endpoints, Django shell commands, and database queries
+
+## API Endpoints
+
+Once the application is running, you can access:
+
+### Graph Data
+- `GET /api/graph/data/` - Complete graph data (nodes + links)
+- `GET /api/graph/nodes/` - Graph nodes only
+- `GET /api/graph/links/` - Graph connections only
+- `GET /api/graph/stats/` - Graph statistics
+
+### Authentication
+- `POST /api/users/login/` - User login
+- `POST /api/users/register/` - User registration
+- `GET /api/users/verify/` - Email verification
+
+### Views
+- `/dashboard/` - Main dashboard
+- `/api/graph/view/` - Interactive graph visualization
+- `/admin/` - Django admin panel (requires superuser)
 
 ## License
 

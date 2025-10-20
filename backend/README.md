@@ -2,37 +2,14 @@
 
 Django-based backend for the EduGraph curriculum visualization project.
 
-## Setup
+## Quick Start
 
-1. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+This project uses Docker for easy setup. See the main [README.md](../README.md) and [DOCKER_SETUP.md](../DOCKER_SETUP.md) for complete setup instructions.
+
+**Quick command:**
+```powershell
+docker-compose up -d
 ```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Run migrations:
-```bash
-python manage.py migrate
-```
-
-4. Create a superuser (optional):
-```bash
-python manage.py createsuperuser
-```
-
-## Running the Server
-
-Start the development server:
-```bash
-python manage.py runserver
-```
-
-The server will start at http://localhost:8000
 
 ## API Endpoints
 
@@ -42,28 +19,85 @@ The server will start at http://localhost:8000
 - `GET /api/users/verify/` - Email verification
 
 ### Graph Data
-- `GET /api/graph/data/` - Get complete graph data
-- `GET /api/graph/nodes/` - Get graph nodes
-- `GET /api/graph/links/` - Get graph connections
+- `GET /api/graph/data/` - Get complete graph data (nodes + links)
+- `GET /api/graph/nodes/` - Get graph nodes only
+- `GET /api/graph/links/` - Get graph connections only
 - `GET /api/graph/stats/` - Get graph statistics
 
 ### Views
 - `/dashboard/` - Main dashboard
-- `/graph/view/` - Graph visualization
+- `/api/graph/view/` - Interactive graph visualization
 - `/admin/` - Admin interface (requires superuser)
 
-## Project Structure
+## Django Management Commands
 
-- `artifacts/` - Graph data models and API views
-- `users/` - User management and authentication
-- `common/` - Shared utilities and serializers
-- `src/` - Core graph processing logic
-- `templates/` - HTML templates
+Useful commands when working with Docker:
 
-## Note
+```powershell
+# Run any Django management command
+docker-compose exec web python manage.py <command>
 
-This is a development setup. For production, make sure to:
-- Configure proper security settings
-- Use a production-grade server (e.g., Gunicorn)
-- Set up proper static file serving
-- Configure a proper database (default is SQLite)
+# Examples:
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python manage.py collectstatic
+```
+
+## Django Shell Commands
+
+Access the Django shell:
+```powershell
+docker-compose exec web python manage.py shell
+```
+
+### Useful User Model Queries
+
+```python
+from users.models import User
+from django.utils import timezone
+from datetime import timedelta
+
+# Get all users
+User.objects.all()
+
+# Get active users
+User.objects.filter(is_active=True)
+
+# Search users by email
+User.objects.filter(email__contains='example.com')
+
+# Get superusers
+User.objects.filter(is_superuser=True)
+
+# Get user by email
+User.objects.get(email='user@example.com')
+
+# Count total users
+User.objects.count()
+
+# Get unverified users
+User.objects.filter(verification_code__isnull=False)
+
+# Get users created in last 7 days
+one_week_ago = timezone.now() - timedelta(days=7)
+User.objects.filter(date_joined__gte=one_week_ago)
+
+# Create a new user
+User.objects.create_user(
+    email='newuser@example.com',
+    password='secure_password',
+    name='New User'
+)
+```
+
+## Development Notes
+
+- This project uses Docker for containerized development
+- Database is automatically configured via docker-compose
+- Static files are collected automatically on container startup
+- For production deployment, see [../DOCKER_SETUP.md](../DOCKER_SETUP.md)
+
+## Related Documentation
+
+- **[../README.md](../README.md)** - Project overview and quick start
+- **[../DOCKER_SETUP.md](../DOCKER_SETUP.md)** - Docker setup, development tools, and production deployment
