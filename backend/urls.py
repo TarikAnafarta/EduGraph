@@ -8,6 +8,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from backend.users.views import login_view, register_view, verify_view, dashboard_view
+from backend.artifacts.views import GraphVisualizationView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('verify/', verify_view, name='verify'),
     path('dashboard/', dashboard_view, name='dashboard'),
+    path('graph/', GraphVisualizationView.as_view(), name='graph'),
     path('', dashboard_view, name='home'),  # Redirect root to dashboard
 ]
 

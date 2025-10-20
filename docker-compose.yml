@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: edugraph_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-edugraph}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - edugraph_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-edugraph}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edugraph_web
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key-change-in-production}
+      - DB_NAME=${DB_NAME:-edugraph}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,*}
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - edugraph_network
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: edugraph_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - web
+    networks:
+      - edugraph_network
+    profiles:
+      - production
+
+  # pgAdmin for Database Management (Optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: edugraph_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@edugraph.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      - db
+    networks:
+      - edugraph_network
+    profiles:
+      - dev
+
+networks:
+  edugraph_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local
+  pgadmin_data:
+    driver: local

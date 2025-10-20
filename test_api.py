@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Test script to verify the EduGraph API endpoints.
-Run this after starting the API server with: python run_api.py
+Make sure the application is running first: docker-compose up -d
 """
 
 import requests
@@ -48,7 +48,7 @@ def test_endpoint(url, name, description):
             
     except requests.exceptions.ConnectionError:
         print("❌ FAILED: Could not connect to server")
-        print("   Make sure the server is running: python run_api.py")
+        print("   Make sure the application is running: docker-compose up -d")
         return False
     except Exception as e:
         print(f"❌ FAILED: {str(e)}")
