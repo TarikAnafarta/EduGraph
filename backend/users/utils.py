@@ -13,21 +13,19 @@ def get_password_reset_email_template(user_name, reset_url):
     # Plain text version
     plain_text_message = f"""Hello {user_name},
 
-We received a request to reset your password for your MyCoach account. Click the link below to reset your password:
+We received a request to reset your password for your EduGraph account. Click the link below to reset your password:
 
 {reset_url}
 
 If you didn't request a password reset, you can safely ignore this email.
 
-If the link above doesn't work, copy and paste it into your browser.
-
-This link will expire in 30 minutes.
+This link will expire in 30 minutes for security reasons.
 
 Best regards,
-The MyCoach Team
+EduGraph Team
 """
 
-    # HTML version (your existing template)
+    # HTML version
     html_message = f"""
     <!DOCTYPE html>
     <html>
@@ -37,81 +35,89 @@ The MyCoach Team
         <title>Reset Your Password</title>
         <style>
             body {{
-                line-height: 1.2;
-                color: #333333;
                 margin: 0;
                 padding: 0;
-                background-color: #f5f5f5;
+                background-color: #e8f0fe;
+                font-family: Arial, sans-serif;
             }}
-            .container {{
-                font-family: 'Roboto', sans-serif;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #ffffff;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            .email-wrapper {{
+                max-width: 580px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
             }}
-            .header {{
-                text-align: center;
-                padding-bottom: 20px;
-                border-bottom: 1px solid #eeeeee;
-            }}
-            .logo {{
-                width: 100px;
-            }}
-            .content {{
+            .email-header {{
+                background: linear-gradient(135deg, #2c3e50, #3498db);
+                color: white;
                 padding: 30px 20px;
+                text-align: center;
             }}
-            .button {{
+            .email-body {{
+                padding: 30px 25px;
+                color: #2c3e50;
+                line-height: 1.5;
+            }}
+            .action-button {{
                 display: inline-block;
-                padding: 12px 24px;
-                background-color: #3B83F7;
-                color: #ffffff !important;
+                background: linear-gradient(135deg, #2c3e50, #3498db);
+                color: white !important;
                 text-decoration: none;
-                border-radius: 4px;
-                font-weight: 500;
+                padding: 14px 32px;
+                border-radius: 25px;
+                margin: 25px 0;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 4px 6px rgba(44, 62, 80, 0.15);
+                transition: transform 0.2s;
+            }}
+            .action-button:hover {{
+                transform: translateY(-2px);
+            }}
+            .backup-link {{
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
                 margin: 20px 0;
-                text-align: center;
-            }}
-            .footer {{
-                text-align: center;
-                font-size: 12px;
-                color: #757575;
-                padding-top: 20px;
-                border-top: 1px solid #eeeeee;
-            }}
-            .link {{
                 word-break: break-all;
-                color: #6200ea;
+                color: #2c3e50;
+            }}
+            .email-footer {{
+                background: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                color: #6c757d;
+                font-size: 12px;
+                margin-top: 20px;
             }}
         </style>
     </head>
     <body>
-        <div class="container">
-            <div class="content">
+        <div class="email-wrapper">
+            <div class="email-header">
+                <h1 style="margin: 0; font-size: 24px;">Password Reset Request</h1>
+            </div>
+            <div class="email-body">
                 <p>Hello {user_name},</p>
-                <p>We received a request to reset your password for your MyCoach account.
-                Click the button below to reset your password:</p>
+                <p>We received a request to reset your password. To proceed with the password reset, click the button below:</p>
 
                 <div style="text-align: center;">
-                    <a href="{reset_url}" class="button">Reset Password</a>
+                    <a href="{reset_url}" class="action-button">Reset Password</a>
                 </div>
 
-                <p>If you didn't request a password reset,
-                you can safely ignore this email.</p>
+                <p>If you didn't make this request, you can safely ignore this email.</p>
 
-                <p>If the button above doesn't work,
-                copy and paste the following link into your browser:</p>
-                <p><a href="{reset_url}" class="link">{reset_url}</a></p>
+                <p>If you're having trouble with the button, copy and paste this link into your browser:</p>
+                <div class="backup-link">
+                    <a href="{reset_url}" style="color: #2c3e50;">{reset_url}</a>
+                </div>
 
-                <p>This link will expire in 30 minutes.</p>
+                <p>Note: This link will expire in 30 minutes for security reasons.</p>
 
-                <p>Best regards,<br>The MyCoach Team</p>
+                <p>Best regards,<br>EduGraph Team</p>
             </div>
-            <div class="footer">
-                <p>&copy; {datetime.datetime.now().year} MyCoach.
-                All rights reserved.</p>
+            <div class="email-footer">
+                <p>&copy; {datetime.datetime.now().year} EduGraph. All rights reserved.</p>
             </div>
         </div>
     </body>
@@ -126,14 +132,14 @@ def get_verification_email_template(user_name, code):
     # Plain text version
     plain_text = f"""Hello {user_name},
 
-Your verification code for your MyCoach account is: {code}
+Welcome to EduGraph! Your verification code is: {code}
 
 Please enter this code to activate your account.
 
-This code will expire in 30 minutes.
+This code will expire in 30 minutes for security reasons.
 
 Best regards,
-The MyCoach Team
+EduGraph Team
 """
 
     # HTML version matching password reset style
@@ -146,68 +152,76 @@ The MyCoach Team
         <title>Account Verification</title>
         <style>
             body {{
-                line-height: 1.2;
-                color: #333333;
                 margin: 0;
                 padding: 0;
-                background-color: #f5f5f5;
+                background-color: #e8f0fe;
+                font-family: Arial, sans-serif;
             }}
-            .container {{
-                font-family: 'Roboto', sans-serif;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #ffffff;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            .email-wrapper {{
+                max-width: 580px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
             }}
-            .header {{
-                text-align: center;
-                padding-bottom: 20px;
-                border-bottom: 1px solid #eeeeee;
-            }}
-            .logo {{
-                width: 100px;
-            }}
-            .content {{
+            .email-header {{
+                background: linear-gradient(135deg, #2c3e50, #3498db);
+                color: white;
                 padding: 30px 20px;
+                text-align: center;
+            }}
+            .email-body {{
+                padding: 30px 25px;
+                color: #2c3e50;
+                line-height: 1.5;
+            }}
+            .verification-box {{
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                border: 2px dashed #3498db;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                margin: 25px 0;
             }}
             .verification-code {{
-                background-color: #f5f5f5;
-                padding: 15px;
-                border-radius: 4px;
-                font-size: 24px;
+                font-size: 32px;
                 font-weight: bold;
-                letter-spacing: 2px;
-                text-align: center;
-                margin: 20px 0;
+                letter-spacing: 4px;
+                color: #2c3e50;
+                margin: 10px 0;
             }}
-            .footer {{
+            .email-footer {{
+                background: #f8f9fa;
+                padding: 20px;
                 text-align: center;
+                color: #6c757d;
                 font-size: 12px;
-                color: #757575;
-                padding-top: 20px;
-                border-top: 1px solid #eeeeee;
+                margin-top: 20px;
             }}
         </style>
     </head>
     <body>
-        <div class="container">
-            <div class="content">
+        <div class="email-wrapper">
+            <div class="email-header">
+                <h1 style="margin: 0; font-size: 24px;">Verify Your Account</h1>
+            </div>
+            <div class="email-body">
                 <p>Hello {user_name},</p>
-                <p>Your verification code for your MyCoach account is:</p>
+                <p>Welcome to EduGraph! To complete your account setup, please enter the verification code below:</p>
 
-                <div class="verification-code">
-                    {code}
+                <div class="verification-box">
+                    <div class="verification-code">
+                        {code}
+                    </div>
+                    <p style="margin: 5px 0 0; color: #6c757d;">Enter this code to activate your account</p>
                 </div>
 
-                <p>Please enter this code to activate your account.</p>
-                <p>This code will expire in 30 minutes.</p>
+                <p>This code will expire in 30 minutes for security reasons.</p>
 
-                <p>Best regards,<br>The MyCoach Team</p>
+                <p>Best regards,<br>EduGraph Team</p>
             </div>
-            <div class="footer">
-                <p>&copy; {datetime.datetime.now().year} MyCoach. All rights reserved.</p>
+            <div class="email-footer">
+                <p>&copy; {datetime.datetime.now().year} EduGraph. All rights reserved.</p>
             </div>
         </div>
     </body>
