@@ -32,7 +32,7 @@ For detailed setup instructions and API documentation:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+All rights reserved - see the [LICENSE](LICENSE) file for details.
 
 ### Third-Party Libraries
 - D3.js (BSD License)
