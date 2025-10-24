@@ -276,9 +276,11 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('Account verified successfully! Redirecting to login...');
+                    showSuccess('Account verified successfully! Redirecting...');
+                    // Try to auto-login the user
+                    // Since we don't have password here, redirect to complete profile
                     setTimeout(() => {
-                        window.location.href = '/login';
+                        window.location.href = `/login?verified=true&email=${encodeURIComponent(email)}`;
                     }, 2000);
                 } else {
                     showError(data.message || 'Verification failed. Please try again.');

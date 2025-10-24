@@ -168,9 +168,9 @@
             </div>
 
             <div class="feature-card">
-                <h3>⚙️ Settings</h3>
-                <p>Customize your profile and application preferences.</p>
-                <button class="feature-btn" onclick="window.location.href='/profile'">Profile Settings</button>
+                <h3>👤 Profile</h3>
+                <p>View and update your personal information and account details.</p>
+                <button class="feature-btn" onclick="window.location.href='/profile'">View Profile</button>
             </div>
         </div>
     </div>
@@ -219,6 +219,13 @@
 
                 if (response.ok) {
                     const user = await response.json();
+                    
+                    // Check if profile is completed
+                    if (!user.profile_completed) {
+                        window.location.href = '/complete-profile/';
+                        return;
+                    }
+                    
                     document.getElementById('user-name').textContent = user.name || user.email;
                 } else {
                     localStorage.removeItem('authToken');
