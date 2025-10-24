@@ -37,6 +37,7 @@ from django.utils.decorators import method_decorator
 from backend.users.models import PasswordResetToken, RecentAction, User, VerificationCode
 from backend.users.serializers import (
     UserChangePasswordSerializer,
+    UserCompleteProfileSerializer,
     UserForgotPasswordSerializer,
     UserLoginSerializer,
     UserRegisterSerializer,
@@ -57,6 +58,11 @@ def verify_view(request):
 def dashboard_view(request):
     return render(request, 'dashboard.html')
 
+def profile_view(request):
+    return render(request, 'profile.html')
+
+def complete_profile_view(request):
+    return render(request, 'auth/complete_profile.html')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -97,14 +103,45 @@ class UserRegisterAPIView(APIView):
         name = serializer.validated_data.get("name")
         password = serializer.validated_data.get("password")
 
-        if User.objects.filter(email=email).exists():
-            return Response(
-                {"message": "User with this email already exists"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Check if user already exists
+        existing_user = User.objects.filter(email=email).first()
+        
+        if existing_user:
+            # If user exists and is already active, return error
+            if existing_user.is_active:
+                return Response(
+                    {"message": "User with this email already exists"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            else:
+                # If user exists but not active (didn't verify), update and resend code
+                existing_user.name = name
+                existing_user.set_password(password)
+                existing_user.save()
+                
+                # Delete old verification codes
+                VerificationCode.objects.filter(user=existing_user).delete()
+                
+                # Create and send new verification code
+                verification_code = VerificationCode.objects.create(user=existing_user)
+                
+                try:
+                    verification_code.send()
+                    if settings.DEBUG:
+                        message = f"Verification code resent. Code: {verification_code.code} (Check email or console)"
+                    else:
+                        message = "Verification code resent. Please check your email."
+                except Exception as email_error:
+                    logging.error(f"Email sending failed: {email_error}")
+                    message = f"Verification code: {verification_code.code} (Email sending failed)"
+                
+                return Response(
+                    {"message": message},
+                    status=status.HTTP_200_OK
+                )
 
         try:
-            # Create user (will be inactive until verified)
+            # Create new user (will be inactive until verified)
             user = User.objects.create_user(
                 email=email,
                 name=name,
@@ -392,3 +429,49 @@ class UserResetPasswordValidateAPIView(APIView):
                 {"message": "Invalid password reset link."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UserCompleteProfileAPIView(APIView):
+    """
+    API endpoint for users to complete their profile after registration.
+    """
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        
+        # Check if profile is already completed
+        if user.profile_completed:
+            return Response(
+                {"message": "Profile already completed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        serializer = UserCompleteProfileSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update user profile
+        user.grade = serializer.validated_data['grade']
+        user.track = serializer.validated_data['track']
+        user.profile_completed = True
+        user.save()
+        
+        return Response(
+            {
+                "message": "Profile completed successfully.",
+                "user": UserSerializer(user).data
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+    def get(self, request, *args, **kwargs):
+        """
+        Get available grade and track choices
+        """
+        return Response(
+            {
+                "grades": [{"value": choice[0], "label": choice[1]} for choice in User.GRADE_CHOICES],
+                "tracks": [{"value": choice[0], "label": choice[1]} for choice in User.TRACK_CHOICES],
+            },
+            status=status.HTTP_200_OK,
+        )
