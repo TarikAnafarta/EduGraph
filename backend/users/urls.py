@@ -11,6 +11,7 @@ from backend.users.views import (
     UserForgotPasswordAPIView,
     UserResetPasswordAPIView,
     UserResetPasswordValidateAPIView,
+    UserCompleteProfileAPIView,
 )
 
 app_name = "users"
@@ -27,4 +28,5 @@ urlpatterns = [
     path("forgot-password/", UserForgotPasswordAPIView.as_view(), name="forgot-password"),
     path("reset-password/", UserResetPasswordAPIView.as_view(), name="reset-password"),
     path("reset-password/validate/", UserResetPasswordValidateAPIView.as_view(), name="reset-password-validate"),
+    path("complete-profile/", UserCompleteProfileAPIView.as_view(), name="complete-profile"),
 ]

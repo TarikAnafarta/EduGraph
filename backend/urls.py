@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from backend.users.views import login_view, register_view, verify_view, dashboard_view
+from backend.users.views import login_view, register_view, verify_view, dashboard_view, profile_view, complete_profile_view
 from backend.artifacts.views import GraphVisualizationView
 
 urlpatterns = [
@@ -18,7 +18,9 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('verify/', verify_view, name='verify'),
+    path('complete-profile/', complete_profile_view, name='complete-profile'),
     path('dashboard/', dashboard_view, name='dashboard'),
+    path('profile/', profile_view, name='profile'),
     path('graph/', GraphVisualizationView.as_view(), name='graph'),
     path('', dashboard_view, name='home'),  # Redirect root to dashboard
 ]

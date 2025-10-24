@@ -150,6 +150,31 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .verification-prompt {
+            background: #fff3cd;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .verification-prompt button {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .verification-prompt button:hover {
+            background: #5568d3;
+        }
     </style>
 </head>
 <body>
@@ -181,6 +206,12 @@
 
         <div class="loading" id="loading">Signing in...</div>
 
+        <div class="verification-prompt" id="verification-prompt">
+            <p>Your account is not verified yet.</p>
+            <button onclick="resendVerification()">Resend Verification Code</button>
+            <button onclick="goToVerify()">Enter Verification Code</button>
+        </div>
+
         <div class="auth-links">
             <a href="/register">Don't have an account? Sign up</a><br><br>
             <a href="/forgot-password">Forgot your password?</a>
@@ -193,22 +224,64 @@
         const loading = document.getElementById('loading');
         const errorMessage = document.getElementById('error-message');
         const successMessage = document.getElementById('success-message');
+        const verificationPrompt = document.getElementById('verification-prompt');
+
+        let currentEmail = '';
 
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             successMessage.style.display = 'none';
+            verificationPrompt.style.display = 'none';
         }
 
         function showSuccess(message) {
             successMessage.textContent = message;
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
+            verificationPrompt.style.display = 'none';
         }
 
         function hideMessages() {
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
+            verificationPrompt.style.display = 'none';
+        }
+
+        function showVerificationPrompt() {
+            verificationPrompt.style.display = 'block';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        async function resendVerification() {
+            try {
+                const response = await fetch('/api/users/resend-verification/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ email: currentEmail })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Verification code sent! Redirecting to verification page...');
+                    setTimeout(() => {
+                        window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Failed to send verification code.');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        function goToVerify() {
+            window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
         }
 
         // Get CSRF token from various sources
@@ -237,6 +310,8 @@
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            
+            currentEmail = email;
 
             loginButton.disabled = true;
             loading.style.display = 'block';
@@ -255,10 +330,39 @@
 
                 if (response.ok) {
                     localStorage.setItem('authToken', data.token);
+                    
+                    // Check if user needs to complete profile
+                    try {
+                        const userResponse = await fetch('/api/users/me/', {
+                            headers: {
+                                'Authorization': `Token ${data.token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (userResponse.ok) {
+                            const user = await userResponse.json();
+                            if (!user.profile_completed) {
+                                // Redirect to complete profile
+                                showSuccess('Login successful! Please complete your profile...');
+                                setTimeout(() => {
+                                    window.location.href = '/complete-profile/';
+                                }, 1500);
+                                return;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error checking profile status:', error);
+                    }
+                    
+                    // Profile completed or check failed, go to dashboard
                     showSuccess('Login successful! Redirecting...');
                     setTimeout(() => {
                         window.location.href = '/dashboard/';
                     }, 1500);
+                } else if (response.status === 403 && data.message === 'Account is inactive.') {
+                    // Show verification prompt instead of just error
+                    showVerificationPrompt();
                 } else {
                     showError(data.message || 'Login failed. Please try again.');
                 }

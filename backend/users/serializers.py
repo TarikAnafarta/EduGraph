@@ -7,7 +7,39 @@ from backend.users.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "email", "name", "is_staff", "is_active")
+        fields = ("id", "email", "name", "is_staff", "is_active", "grade", "track", "profile_completed", "date_joined")
+        read_only_fields = ("id", "email", "is_staff", "is_active", "profile_completed", "date_joined")
+    
+    def validate(self, attrs):
+        # Validate that if grade > 8, track must be provided and not 'lgs'
+        grade = attrs.get('grade')
+        track = attrs.get('track')
+        
+        # If grade is not being updated, use the existing value
+        if grade is None and self.instance:
+            grade = self.instance.grade
+        
+        # If track is not being updated, use the existing value
+        if track is None and self.instance:
+            track = self.instance.track
+        
+        if grade and grade > 8:
+            if not track or track == 'lgs':
+                raise serializers.ValidationError({
+                    "track": "9. sınıf ve üzeri için Sayısal veya Sözel alan seçmelisiniz."
+                })
+        
+        # If grade <= 8, track should be 'lgs'
+        if grade and grade <= 8:
+            if track and track != 'lgs':
+                raise serializers.ValidationError({
+                    "track": "8. sınıf ve altı için sadece LGS seçeneği geçerlidir."
+                })
+            # Auto-set to lgs if not provided
+            if 'grade' in attrs:  # Only auto-set if grade is being updated
+                attrs['track'] = 'lgs'
+        
+        return attrs
 
 
 class UserDetailSerializer(UUIDModelSerializer):
@@ -30,7 +62,29 @@ class UserLoginSerializer(serializers.Serializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("email", "name", "password")
+        fields = ("email", "name", "password", "grade", "track")
+    
+    def validate(self, attrs):
+        # Validate that if grade > 8, track must be provided and not 'lgs'
+        grade = attrs.get('grade')
+        track = attrs.get('track')
+        
+        if grade and grade > 8:
+            if not track or track == 'lgs':
+                raise serializers.ValidationError({
+                    "track": "9. sınıf ve üzeri için Sayısal veya Sözel alan seçmelisiniz."
+                })
+        
+        # If grade <= 8, track should be 'lgs'
+        if grade and grade <= 8:
+            if track and track != 'lgs':
+                raise serializers.ValidationError({
+                    "track": "8. sınıf ve altı için sadece LGS seçeneği geçerlidir."
+                })
+            # Auto-set to lgs if not provided
+            attrs['track'] = 'lgs'
+        
+        return attrs
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -56,4 +110,40 @@ class UserResetPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         if attrs["new_password"] != attrs["confirm_password"]:
             raise serializers.ValidationError({"message": "Passwords do not match."})
+        return attrs
+
+
+class UserCompleteProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("grade", "track")
+    
+    def validate(self, attrs):
+        grade = attrs.get('grade')
+        track = attrs.get('track')
+        
+        if not grade:
+            raise serializers.ValidationError({
+                "grade": "Sınıf bilgisi zorunludur."
+            })
+        
+        if not track:
+            raise serializers.ValidationError({
+                "track": "Alan bilgisi zorunludur."
+            })
+        
+        # Validate that if grade > 8, track must not be 'lgs'
+        if grade > 8:
+            if track == 'lgs':
+                raise serializers.ValidationError({
+                    "track": "9. sınıf ve üzeri için Sayısal veya Sözel alan seçmelisiniz."
+                })
+        
+        # If grade <= 8, track should be 'lgs'
+        if grade <= 8:
+            if track != 'lgs':
+                raise serializers.ValidationError({
+                    "track": "8. sınıf ve altı için sadece LGS seçeneği geçerlidir."
+                })
+        
         return attrs

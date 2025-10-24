@@ -285,15 +285,27 @@
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    showSuccess('Account created successfully! Please check your email for verification code.');
+                if (response.ok || response.status === 200) {
+                    showSuccess(data.message || 'Account created successfully! Redirecting to verification...');
                     setTimeout(() => {
                         window.location.href = `/verify?email=${encodeURIComponent(email)}`;
                     }, 2000);
                 } else {
-                    showError(data.message || 'Registration failed. Please try again.');
+                    // Handle various error cases
+                    if (data.message) {
+                        showError(data.message);
+                    } else if (data.email) {
+                        showError(data.email[0]);
+                    } else if (data.name) {
+                        showError(data.name[0]);
+                    } else if (data.password) {
+                        showError(data.password[0]);
+                    } else {
+                        showError('Registration failed. Please try again.');
+                    }
                 }
             } catch (error) {
+                console.error('Registration error:', error);
                 showError('Network error. Please check your connection and try again.');
             } finally {
                 registerButton.disabled = false;
