@@ -19,11 +19,38 @@ from backend.users.utils import (
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    GRADE_CHOICES = [
+        (1, '1. Sınıf'),
+        (2, '2. Sınıf'),
+        (3, '3. Sınıf'),
+        (4, '4. Sınıf'),
+        (5, '5. Sınıf'),
+        (6, '6. Sınıf'),
+        (7, '7. Sınıf'),
+        (8, '8. Sınıf'),
+        (9, '9. Sınıf'),
+        (10, '10. Sınıf'),
+        (11, '11. Sınıf'),
+        (12, '12. Sınıf'),
+    ]
+    
+    TRACK_CHOICES = [
+        ('lgs', 'LGS (8. sınıf ve altı)'),
+        ('sayisal', 'Sayısal'),
+        ('sozel', 'Sözel'),
+    ]
+    
     id = models.UUIDField("ID", primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(_("Name of User"), max_length=255)
     email = models.EmailField("Email", unique=True, db_index=True)
     is_staff = models.BooleanField(default=False, help_text="Only staff users can access Django Admin.")
     is_active = models.BooleanField(default=False, help_text="Only active users can login.")
+    date_joined = models.DateTimeField("Date Joined", default=timezone.now)
+    
+    # Profile completion fields
+    grade = models.IntegerField("Grade", choices=GRADE_CHOICES, null=True, blank=True, help_text="Student's current grade (1-12)")
+    track = models.CharField("Track", max_length=10, choices=TRACK_CHOICES, null=True, blank=True, help_text="Academic track (LGS, Sayısal, Sözel)")
+    profile_completed = models.BooleanField(default=False, help_text="Whether user has completed their profile information")
 
     USERNAME_FIELD = "email"
 
