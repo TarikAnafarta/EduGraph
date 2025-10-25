@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - EduGraph</title>
+    <title>Giriş - EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -180,8 +180,8 @@
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Welcome Back</h1>
-            <p>Sign in to your EduGraph account</p>
+            <h1>Hoş Geldiniz</h1>
+            <p>EduGraph hesabınıza giriş yapın</p>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
@@ -190,31 +190,31 @@
         <form id="login-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">E-posta Adresi</label>
                 <input type="email" id="email" name="email" required>
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">Şifre</label>
                 <input type="password" id="password" name="password" required>
             </div>
 
             <button type="submit" class="auth-button" id="login-button">
-                Sign In
+                Giriş Yap
             </button>
         </form>
 
-        <div class="loading" id="loading">Signing in...</div>
+        <div class="loading" id="loading">Giriş yapılıyor...</div>
 
         <div class="verification-prompt" id="verification-prompt">
-            <p>Your account is not verified yet.</p>
-            <button onclick="resendVerification()">Resend Verification Code</button>
-            <button onclick="goToVerify()">Enter Verification Code</button>
+            <p>Hesabınız henüz doğrulanmamış.</p>
+            <button onclick="resendVerification()">Doğrulama Kodunu Tekrar Gönder</button>
+            <button onclick="goToVerify()">Doğrulama Kodunu Gir</button>
         </div>
 
         <div class="auth-links">
-            <a href="/register">Don't have an account? Sign up</a><br><br>
-            <a href="/forgot-password">Forgot your password?</a>
+            <a href="/register">Hesabınız yok mu? Kayıt olun</a><br><br>
+            <a href="/forgot-password">Şifrenizi mi unuttunuz?</a>
         </div>
     </div>
 
@@ -268,15 +268,15 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showSuccess('Verification code sent! Redirecting to verification page...');
+                    showSuccess('Doğrulama kodu gönderildi! Doğrulama sayfasına yönlendiriliyorsunuz...');
                     setTimeout(() => {
                         window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
                     }, 2000);
                 } else {
-                    showError(data.message || 'Failed to send verification code.');
+                    showError(data.message || 'Doğrulama kodu gönderilemedi.');
                 }
             } catch (error) {
-                showError('Network error. Please try again.');
+                showError('Ağ hatası. Lütfen tekrar deneyin.');
             }
         }
 
@@ -344,7 +344,7 @@
                             const user = await userResponse.json();
                             if (!user.profile_completed) {
                                 // Redirect to complete profile
-                                showSuccess('Login successful! Please complete your profile...');
+                                showSuccess('Giriş başarılı! Lütfen profilinizi tamamlayın...');
                                 setTimeout(() => {
                                     window.location.href = '/complete-profile/';
                                 }, 1500);
@@ -356,7 +356,7 @@
                     }
                     
                     // Profile completed or check failed, go to dashboard
-                    showSuccess('Login successful! Redirecting...');
+                    showSuccess('Giriş başarılı! Yönlendiriliyorsunuz...');
                     setTimeout(() => {
                         window.location.href = '/dashboard/';
                     }, 1500);
@@ -364,10 +364,10 @@
                     // Show verification prompt instead of just error
                     showVerificationPrompt();
                 } else {
-                    showError(data.message || 'Login failed. Please try again.');
+                    showError(data.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
                 }
             } catch (error) {
-                showError('Network error. Please check your connection and try again.');
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
                 loginButton.disabled = false;
                 loading.style.display = 'none';

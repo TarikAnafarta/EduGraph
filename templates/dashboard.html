@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - EduGraph</title>
+    <title>EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -135,8 +135,8 @@
     <nav class="navbar">
         <h1>EduGraph</h1>
         <div class="user-info">
-            <span id="user-name">Loading...</span>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <span id="user-name">Yükleniyor...</span>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
         </div>
     </nav>
 
@@ -144,33 +144,33 @@
         <div id="error-message" class="error-message"></div>
 
         <div class="welcome-card">
-            <h2>Welcome to EduGraph!</h2>
-            <p>Your educational curriculum visualization platform</p>
+            <h2>EduGraph'a Hoş Geldiniz!</h2>
+            <p>Eğitim müfredatı görselleştirme platformunuz</p>
         </div>
 
         <div class="features-grid">
             <div class="feature-card">
-                <h3>📊 Visualize Curriculum</h3>
-                <p>Create interactive graphs to visualize curriculum relationships and learning paths.</p>
-                <button class="feature-btn" onclick="window.location.href='/graph'">Explore Graphs</button>
+                <h3>📊 Müfredatı Görselleştir</h3>
+                <p>Müfredat ilişkilerini ve öğrenme yollarını görselleştirmek için etkileşimli grafikler oluşturun.</p>
+                <button class="feature-btn" onclick="window.location.href='/graph'">Grafikleri Keşfet</button>
             </div>
 
             <div class="feature-card">
-                <h3>📚 Manage Content</h3>
-                <p>Add, edit, and organize your educational content and learning objectives.</p>
-                <button class="feature-btn" onclick="alert('Feature coming soon!')">Manage Content</button>
+                <h3>📚 Ders Yönetimi</h3>
+                <p>Derslerinizi ve öğrenme hedeflerinizi ekleyin, düzenleyin ve organize edin.</p>
+                <button class="feature-btn" onclick="alert('Özellik yakında geliyor!')">İçerikleri Yönet</button>
             </div>
 
             <div class="feature-card">
-                <h3>📈 Track Progress</h3>
-                <p>Monitor learning progress and identify areas for improvement.</p>
-                <button class="feature-btn" onclick="alert('Feature coming soon!')">View Analytics</button>
+                <h3>📈 İlerlemeyi İzle</h3>
+                <p>Öğrenme ilerlemesini izleyin ve geliştirilmesi gereken alanları belirleyin.</p>
+                <button class="feature-btn" onclick="alert('Özellik yakında geliyor!')">Analitikleri Görüntüle</button>
             </div>
 
             <div class="feature-card">
-                <h3>👤 Profile</h3>
-                <p>View and update your personal information and account details.</p>
-                <button class="feature-btn" onclick="window.location.href='/profile'">View Profile</button>
+                <h3>👤 Profil</h3>
+                <p>Kişisel bilgilerinizi ve hesap detaylarınızı görüntüleyin ve güncelleyin.</p>
+                <button class="feature-btn" onclick="window.location.href='/profile'">Profili Görüntüle</button>
             </div>
         </div>
     </div>
@@ -232,7 +232,7 @@
                     window.location.href = '/login';
                 }
             } catch (error) {
-                showError('Failed to load user information');
+                showError('Kullanıcı bilgileri yüklenemedi');
             }
         }
 

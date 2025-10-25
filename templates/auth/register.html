@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - EduGraph</title>
+    <title>Kayıt Ol - EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -161,8 +161,8 @@
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Join EduGraph</h1>
-            <p>Create your account to get started</p>
+            <h1>EduGraph'a Katılın</h1>
+            <p>Başlamak için hesabınızı oluşturun</p>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
@@ -171,37 +171,37 @@
         <form id="register-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">Ad Soyad</label>
                 <input type="text" id="name" name="name" required>
             </div>
 
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">E-posta Adresi</label>
                 <input type="email" id="email" name="email" required>
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">Şifre</label>
                 <input type="password" id="password" name="password" required>
                 <div class="password-requirements">
-                    Password must be at least 8 characters long
+                    Şifre en az 8 karakter uzunluğunda olmalıdır
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="confirm-password">Confirm Password</label>
+                <label for="confirm-password">Şifreyi Onayla</label>
                 <input type="password" id="confirm-password" name="confirm-password" required>
             </div>
 
             <button type="submit" class="auth-button" id="register-button">
-                Create Account
+                Hesap Oluştur
             </button>
         </form>
 
-        <div class="loading" id="loading">Creating account...</div>
+        <div class="loading" id="loading">Hesap oluşturuluyor...</div>
 
         <div class="auth-links">
-            <a href="/login">Already have an account? Sign in</a>
+            <a href="/login">Zaten hesabınız var mı? Giriş yapın</a>
         </div>
     </div>
 
@@ -260,13 +260,13 @@
 
             // Validate passwords match
             if (password !== confirmPassword) {
-                showError('Passwords do not match.');
+                showError('Şifreler eşleşmiyor.');
                 return;
             }
 
             // Validate password length
             if (password.length < 8) {
-                showError('Password must be at least 8 characters long.');
+                showError('Şifre en az 8 karakter uzunluğunda olmalıdır.');
                 return;
             }
 
@@ -286,7 +286,7 @@
                 const data = await response.json();
 
                 if (response.ok || response.status === 200) {
-                    showSuccess(data.message || 'Account created successfully! Redirecting to verification...');
+                    showSuccess(data.message || 'Hesap başarıyla oluşturuldu! Doğrulama sayfasına yönlendiriliyorsunuz...');
                     setTimeout(() => {
                         window.location.href = `/verify?email=${encodeURIComponent(email)}`;
                     }, 2000);
@@ -301,12 +301,12 @@
                     } else if (data.password) {
                         showError(data.password[0]);
                     } else {
-                        showError('Registration failed. Please try again.');
+                        showError('Kayıt başarısız. Lütfen tekrar deneyin.');
                     }
                 }
             } catch (error) {
                 console.error('Registration error:', error);
-                showError('Network error. Please check your connection and try again.');
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
                 registerButton.disabled = false;
                 loading.style.display = 'none';

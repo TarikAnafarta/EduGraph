@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Account - EduGraph</title>
+    <title>Hesap Doğrulama - EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -165,8 +165,8 @@
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Verify Your Account</h1>
-            <p>Enter the verification code sent to your email</p>
+            <h1>Hesabınızı Doğrulayın</h1>
+            <p>E-postanıza gönderilen doğrulama kodunu girin</p>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
@@ -175,23 +175,23 @@
         <form id="verify-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="code">Verification Code</label>
+                <label for="code">Doğrulama Kodu</label>
                 <input type="text" id="code" name="code" required maxlength="6" placeholder="000000">
             </div>
 
             <button type="submit" class="auth-button" id="verify-button">
-                Verify Account
+                Hesabı Doğrula
             </button>
 
             <button type="button" class="auth-button secondary" id="resend-button">
-                Resend Code
+                Kodu Tekrar Gönder
             </button>
         </form>
 
-        <div class="loading" id="loading">Verifying...</div>
+        <div class="loading" id="loading">Doğrulanıyor...</div>
 
         <div class="auth-links">
-            <a href="/login">Back to Login</a>
+            <a href="/login">Giriş Sayfasına Dön</a>
         </div>
     </div>
 
@@ -251,12 +251,12 @@
             const code = document.getElementById('code').value;
 
             if (!email) {
-                showError('Email not found. Please try registering again.');
+                showError('E-posta bulunamadı. Lütfen tekrar kayıt olmayı deneyin.');
                 return;
             }
 
             if (code.length !== 6) {
-                showError('Please enter a 6-digit verification code.');
+                showError('Lütfen 6 haneli doğrulama kodunu girin.');
                 return;
             }
 
@@ -276,17 +276,17 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('Account verified successfully! Redirecting...');
+                    showSuccess('Hesap başarıyla doğrulandı! Yönlendiriliyorsunuz...');
                     // Try to auto-login the user
                     // Since we don't have password here, redirect to complete profile
                     setTimeout(() => {
                         window.location.href = `/login?verified=true&email=${encodeURIComponent(email)}`;
                     }, 2000);
                 } else {
-                    showError(data.message || 'Verification failed. Please try again.');
+                    showError(data.message || 'Doğrulama başarısız. Lütfen tekrar deneyin.');
                 }
             } catch (error) {
-                showError('Network error. Please check your connection and try again.');
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
                 verifyButton.disabled = false;
                 loading.style.display = 'none';
@@ -297,7 +297,7 @@
             hideMessages();
 
             if (!email) {
-                showError('Email not found. Please try registering again.');
+                showError('E-posta bulunamadı. Lütfen tekrar kayıt olmayı deneyin.');
                 return;
             }
 
@@ -316,12 +316,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('Verification code sent successfully!');
+                    showSuccess('Doğrulama kodu başarıyla gönderildi!');
                 } else {
-                    showError(data.message || 'Failed to resend code. Please try again.');
+                    showError(data.message || 'Kod tekrar gönderilemedi. Lütfen tekrar deneyin.');
                 }
             } catch (error) {
-                showError('Network error. Please check your connection and try again.');
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
                 resendButton.disabled = false;
             }
