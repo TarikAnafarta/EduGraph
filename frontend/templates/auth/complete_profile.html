@@ -185,7 +185,7 @@
             position: relative;
         }
 
-        .step::before {
+        .step::after {
             content: '';
             position: absolute;
             top: 15px;
@@ -196,8 +196,12 @@
             z-index: 0;
         }
 
-        .step:first-child::before {
+        .step:last-child::after {
             display: none;
+        }
+
+        .step.completed::after {
+            background: #4caf50;
         }
 
         .step-circle {
@@ -279,6 +283,7 @@
                 <select id="track" name="track" required disabled>
                     <option value="">Önce sınıf seçin</option>
                 </select>
+                <input type="text" id="track-text" name="track-text" value="LGS" readonly style="display: none; width: 100%; padding: 0.875rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem; background: #f5f5f5; color: #333;">
                 <div id="track-info" class="track-info"></div>
             </div>
 
@@ -300,12 +305,8 @@
         const successMessage = document.getElementById('success-message');
         const loading = document.getElementById('loading');
 
-        // Grade choices (1-12)
+        // Grade choices (5-12)
         const grades = [
-            { value: 1, label: '1. Sınıf' },
-            { value: 2, label: '2. Sınıf' },
-            { value: 3, label: '3. Sınıf' },
-            { value: 4, label: '4. Sınıf' },
             { value: 5, label: '5. Sınıf' },
             { value: 6, label: '6. Sınıf' },
             { value: 7, label: '7. Sınıf' },
@@ -318,7 +319,7 @@
 
         // Track choices
         const tracks = {
-            lgs: { value: 'lgs', label: 'LGS (8. sınıf ve altı)' },
+            lgs: { value: 'lgs', label: 'LGS' },
             sayisal: { value: 'sayisal', label: 'Sayısal' },
             sozel: { value: 'sozel', label: 'Sözel' }
         };
@@ -334,35 +335,35 @@
         // Handle grade selection
         gradeSelect.addEventListener('change', function() {
             const selectedGrade = parseInt(this.value);
-            trackSelect.disabled = false;
-            trackSelect.innerHTML = '<option value="">Alan Seçin</option>';
-            trackInfo.style.display = 'none';
-
+            const trackSelectElement = document.getElementById('track');
+            const trackTextElement = document.getElementById('track-text');
+            
             if (!selectedGrade) {
-                trackSelect.disabled = true;
-                trackSelect.innerHTML = '<option value="">Önce sınıf seçin</option>';
+                trackSelectElement.disabled = true;
+                trackSelectElement.innerHTML = '<option value="">Önce sınıf seçin</option>';
+                trackSelectElement.style.display = 'block';
+                trackTextElement.style.display = 'none';
                 return;
             }
 
             if (selectedGrade <= 8) {
-                // For grades 1-8, only LGS option
-                const option = document.createElement('option');
-                option.value = tracks.lgs.value;
-                option.textContent = tracks.lgs.label;
-                trackSelect.appendChild(option);
-                trackSelect.value = tracks.lgs.value;
-                trackInfo.textContent = '8. sınıf ve altı için otomatik olarak LGS seçilmiştir.';
-                trackInfo.style.display = 'block';
+                // For grades 5-8, show text input with LGS
+                trackSelectElement.style.display = 'none';
+                trackTextElement.style.display = 'block';
+                trackTextElement.value = 'LGS';
             } else {
-                // For grades 9-12, Sayısal or Sözel
+                // For grades 9-12, show dropdown with Sayısal or Sözel
+                trackSelectElement.style.display = 'block';
+                trackTextElement.style.display = 'none';
+                trackSelectElement.disabled = false;
+                trackSelectElement.innerHTML = '<option value="">Alan Seçin</option>';
+                
                 [tracks.sayisal, tracks.sozel].forEach(track => {
                     const option = document.createElement('option');
                     option.value = track.value;
                     option.textContent = track.label;
-                    trackSelect.appendChild(option);
+                    trackSelectElement.appendChild(option);
                 });
-                trackInfo.textContent = '9. sınıf ve üzeri için lütfen alanınızı seçin.';
-                trackInfo.style.display = 'block';
             }
         });
 
@@ -419,7 +420,13 @@
             e.preventDefault();
 
             const grade = parseInt(gradeSelect.value);
-            const track = trackSelect.value;
+            let track;
+            
+            if (grade <= 8) {
+                track = 'lgs';
+            } else {
+                track = trackSelect.value;
+            }
 
             if (!grade || !track) {
                 showError('Lütfen tüm alanları doldurun.');

@@ -16,7 +16,7 @@ docker-compose up -d
 ### Authentication
 - `POST /api/users/login/` - User login
 - `POST /api/users/register/` - User registration
-- `GET /api/users/verify/` - Email verification
+- `POST /api/users/verify/` - Email verification
 
 ### Graph Data
 - `GET /api/graph/data/` - Get complete graph data (nodes + links)
@@ -26,7 +26,8 @@ docker-compose up -d
 
 ### Views
 - `/dashboard/` - Main dashboard
-- `/api/graph/view/` - Interactive graph visualization
+- `/graph/` - Interactive graph visualization
+- `/api/graph/view/` - Interactive graph visualization (API route)
 - `/admin/` - Admin interface (requires superuser)
 
 ## Django Management Commands

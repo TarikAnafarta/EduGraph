@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - EduGraph</title>
+    <title>Kayıt Ol - EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -69,6 +69,12 @@
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
         }
 
         .auth-button {
@@ -150,138 +156,77 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .verification-prompt {
-            background: #fff3cd;
-            color: #856404;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-top: 1rem;
-            text-align: center;
-            display: none;
-        }
-
-        .verification-prompt button {
-            margin-top: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .verification-prompt button:hover {
-            background: #5568d3;
-        }
     </style>
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Welcome Back</h1>
-            <p>Sign in to your EduGraph account</p>
+            <h1>EduGraph'a Katılın</h1>
+            <p>Başlamak için hesabınızı oluşturun</p>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
         <div id="success-message" class="success-message" style="display: none;"></div>
 
-        <form id="login-form">
+        <form id="register-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="name">Ad Soyad</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-posta Adresi</label>
                 <input type="email" id="email" name="email" required>
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">Şifre</label>
                 <input type="password" id="password" name="password" required>
+                <div class="password-requirements">
+                    Şifre en az 8 karakter uzunluğunda olmalıdır
+                </div>
             </div>
 
-            <button type="submit" class="auth-button" id="login-button">
-                Sign In
+            <div class="form-group">
+                <label for="confirm-password">Şifreyi Onayla</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+
+            <button type="submit" class="auth-button" id="register-button">
+                Hesap Oluştur
             </button>
         </form>
 
-        <div class="loading" id="loading">Signing in...</div>
-
-        <div class="verification-prompt" id="verification-prompt">
-            <p>Your account is not verified yet.</p>
-            <button onclick="resendVerification()">Resend Verification Code</button>
-            <button onclick="goToVerify()">Enter Verification Code</button>
-        </div>
+        <div class="loading" id="loading">Hesap oluşturuluyor...</div>
 
         <div class="auth-links">
-            <a href="/register">Don't have an account? Sign up</a><br><br>
-            <a href="/forgot-password">Forgot your password?</a>
+            <a href="/login">Zaten hesabınız var mı? Giriş yapın</a>
         </div>
     </div>
 
     <script>
-        const loginForm = document.getElementById('login-form');
-        const loginButton = document.getElementById('login-button');
+        const registerForm = document.getElementById('register-form');
+        const registerButton = document.getElementById('register-button');
         const loading = document.getElementById('loading');
         const errorMessage = document.getElementById('error-message');
         const successMessage = document.getElementById('success-message');
-        const verificationPrompt = document.getElementById('verification-prompt');
-
-        let currentEmail = '';
 
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             successMessage.style.display = 'none';
-            verificationPrompt.style.display = 'none';
         }
 
         function showSuccess(message) {
             successMessage.textContent = message;
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
-            verificationPrompt.style.display = 'none';
         }
 
         function hideMessages() {
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
-            verificationPrompt.style.display = 'none';
-        }
-
-        function showVerificationPrompt() {
-            verificationPrompt.style.display = 'block';
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-        }
-
-        async function resendVerification() {
-            try {
-                const response = await fetch('/api/users/resend-verification/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCSRFToken()
-                    },
-                    body: JSON.stringify({ email: currentEmail })
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showSuccess('Verification code sent! Redirecting to verification page...');
-                    setTimeout(() => {
-                        window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
-                    }, 2000);
-                } else {
-                    showError(data.message || 'Failed to send verification code.');
-                }
-            } catch (error) {
-                showError('Network error. Please try again.');
-            }
-        }
-
-        function goToVerify() {
-            window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
         }
 
         // Get CSRF token from various sources
@@ -304,72 +249,66 @@
             return '';
         }
 
-        loginForm.addEventListener('submit', async (e) => {
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessages();
 
+            const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
-            currentEmail = email;
+            const confirmPassword = document.getElementById('confirm-password').value;
 
-            loginButton.disabled = true;
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showError('Şifreler eşleşmiyor.');
+                return;
+            }
+
+            // Validate password length
+            if (password.length < 8) {
+                showError('Şifre en az 8 karakter uzunluğunda olmalıdır.');
+                return;
+            }
+
+            registerButton.disabled = true;
             loading.style.display = 'block';
 
             try {
-                const response = await fetch('/api/users/login/', {
+                const response = await fetch('/api/users/register/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCSRFToken()
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ name, email, password })
                 });
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    localStorage.setItem('authToken', data.token);
-                    
-                    // Check if user needs to complete profile
-                    try {
-                        const userResponse = await fetch('/api/users/me/', {
-                            headers: {
-                                'Authorization': `Token ${data.token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        
-                        if (userResponse.ok) {
-                            const user = await userResponse.json();
-                            if (!user.profile_completed) {
-                                // Redirect to complete profile
-                                showSuccess('Login successful! Please complete your profile...');
-                                setTimeout(() => {
-                                    window.location.href = '/complete-profile/';
-                                }, 1500);
-                                return;
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Error checking profile status:', error);
-                    }
-                    
-                    // Profile completed or check failed, go to dashboard
-                    showSuccess('Login successful! Redirecting...');
+                if (response.ok || response.status === 200) {
+                    showSuccess(data.message || 'Hesap başarıyla oluşturuldu! Doğrulama sayfasına yönlendiriliyorsunuz...');
                     setTimeout(() => {
-                        window.location.href = '/dashboard/';
-                    }, 1500);
-                } else if (response.status === 403 && data.message === 'Account is inactive.') {
-                    // Show verification prompt instead of just error
-                    showVerificationPrompt();
+                        window.location.href = `/verify?email=${encodeURIComponent(email)}`;
+                    }, 2000);
                 } else {
-                    showError(data.message || 'Login failed. Please try again.');
+                    // Handle various error cases
+                    if (data.message) {
+                        showError(data.message);
+                    } else if (data.email) {
+                        showError(data.email[0]);
+                    } else if (data.name) {
+                        showError(data.name[0]);
+                    } else if (data.password) {
+                        showError(data.password[0]);
+                    } else {
+                        showError('Kayıt başarısız. Lütfen tekrar deneyin.');
+                    }
                 }
             } catch (error) {
-                showError('Network error. Please check your connection and try again.');
+                console.error('Registration error:', error);
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
-                loginButton.disabled = false;
+                registerButton.disabled = false;
                 loading.style.display = 'none';
             }
         });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Account - EduGraph</title>
+    <title>Giriş - EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -64,9 +64,6 @@
             border-radius: 10px;
             font-size: 1rem;
             transition: border-color 0.3s ease;
-            text-align: center;
-            font-size: 1.5rem;
-            letter-spacing: 0.5rem;
         }
 
         .form-group input:focus {
@@ -85,7 +82,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s ease;
-            margin-bottom: 1rem;
         }
 
         .auth-button:hover {
@@ -96,12 +92,6 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .auth-button.secondary {
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
         }
 
         .auth-links {
@@ -160,68 +150,138 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .verification-prompt {
+            background: #fff3cd;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .verification-prompt button {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .verification-prompt button:hover {
+            background: #5568d3;
+        }
     </style>
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Verify Your Account</h1>
-            <p>Enter the verification code sent to your email</p>
+            <h1>Hoş Geldiniz</h1>
+            <p>EduGraph hesabınıza giriş yapın</p>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
         <div id="success-message" class="success-message" style="display: none;"></div>
 
-        <form id="verify-form">
+        <form id="login-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="code">Verification Code</label>
-                <input type="text" id="code" name="code" required maxlength="6" placeholder="000000">
+                <label for="email">E-posta Adresi</label>
+                <input type="email" id="email" name="email" required>
             </div>
 
-            <button type="submit" class="auth-button" id="verify-button">
-                Verify Account
-            </button>
+            <div class="form-group">
+                <label for="password">Şifre</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-            <button type="button" class="auth-button secondary" id="resend-button">
-                Resend Code
+            <button type="submit" class="auth-button" id="login-button">
+                Giriş Yap
             </button>
         </form>
 
-        <div class="loading" id="loading">Verifying...</div>
+        <div class="loading" id="loading">Giriş yapılıyor...</div>
+
+        <div class="verification-prompt" id="verification-prompt">
+            <p>Hesabınız henüz doğrulanmamış.</p>
+            <button onclick="resendVerification()">Doğrulama Kodunu Tekrar Gönder</button>
+            <button onclick="goToVerify()">Doğrulama Kodunu Gir</button>
+        </div>
 
         <div class="auth-links">
-            <a href="/login">Back to Login</a>
+            <a href="/register">Hesabınız yok mu? Kayıt olun</a><br><br>
+            <a href="/forgot-password">Şifrenizi mi unuttunuz?</a>
         </div>
     </div>
 
     <script>
-        const verifyForm = document.getElementById('verify-form');
-        const verifyButton = document.getElementById('verify-button');
-        const resendButton = document.getElementById('resend-button');
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.getElementById('login-button');
         const loading = document.getElementById('loading');
         const errorMessage = document.getElementById('error-message');
         const successMessage = document.getElementById('success-message');
+        const verificationPrompt = document.getElementById('verification-prompt');
 
-        // Get email from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const email = urlParams.get('email');
+        let currentEmail = '';
 
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             successMessage.style.display = 'none';
+            verificationPrompt.style.display = 'none';
         }
 
         function showSuccess(message) {
             successMessage.textContent = message;
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
+            verificationPrompt.style.display = 'none';
         }
 
         function hideMessages() {
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
+            verificationPrompt.style.display = 'none';
+        }
+
+        function showVerificationPrompt() {
+            verificationPrompt.style.display = 'block';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        async function resendVerification() {
+            try {
+                const response = await fetch('/api/users/resend-verification/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ email: currentEmail })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Doğrulama kodu gönderildi! Doğrulama sayfasına yönlendiriliyorsunuz...');
+                    setTimeout(() => {
+                        window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Doğrulama kodu gönderilemedi.');
+                }
+            } catch (error) {
+                showError('Ağ hatası. Lütfen tekrar deneyin.');
+            }
+        }
+
+        function goToVerify() {
+            window.location.href = `/verify?email=${encodeURIComponent(currentEmail)}`;
         }
 
         // Get CSRF token from various sources
@@ -244,92 +304,74 @@
             return '';
         }
 
-        verifyForm.addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessages();
 
-            const code = document.getElementById('code').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            currentEmail = email;
 
-            if (!email) {
-                showError('Email not found. Please try registering again.');
-                return;
-            }
-
-            if (code.length !== 6) {
-                showError('Please enter a 6-digit verification code.');
-                return;
-            }
-
-            verifyButton.disabled = true;
+            loginButton.disabled = true;
             loading.style.display = 'block';
 
             try {
-                const response = await fetch('/api/users/verify/', {
+                const response = await fetch('/api/users/login/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCSRFToken()
                     },
-                    body: JSON.stringify({ email, code })
+                    body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('Account verified successfully! Redirecting...');
-                    // Try to auto-login the user
-                    // Since we don't have password here, redirect to complete profile
+                    localStorage.setItem('authToken', data.token);
+                    
+                    // Check if user needs to complete profile
+                    try {
+                        const userResponse = await fetch('/api/users/me/', {
+                            headers: {
+                                'Authorization': `Token ${data.token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (userResponse.ok) {
+                            const user = await userResponse.json();
+                            if (!user.profile_completed) {
+                                // Redirect to complete profile
+                                showSuccess('Giriş başarılı! Lütfen profilinizi tamamlayın...');
+                                setTimeout(() => {
+                                    window.location.href = '/complete-profile/';
+                                }, 1500);
+                                return;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error checking profile status:', error);
+                    }
+                    
+                    // Profile completed or check failed, go to dashboard
+                    showSuccess('Giriş başarılı! Yönlendiriliyorsunuz...');
                     setTimeout(() => {
-                        window.location.href = `/login?verified=true&email=${encodeURIComponent(email)}`;
-                    }, 2000);
+                        window.location.href = '/dashboard/';
+                    }, 1500);
+                } else if (response.status === 403 && data.message === 'Account is inactive.') {
+                    // Show verification prompt instead of just error
+                    showVerificationPrompt();
                 } else {
-                    showError(data.message || 'Verification failed. Please try again.');
+                    showError(data.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
                 }
             } catch (error) {
-                showError('Network error. Please check your connection and try again.');
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
-                verifyButton.disabled = false;
+                loginButton.disabled = false;
                 loading.style.display = 'none';
             }
-        });
-
-        resendButton.addEventListener('click', async () => {
-            hideMessages();
-
-            if (!email) {
-                showError('Email not found. Please try registering again.');
-                return;
-            }
-
-            resendButton.disabled = true;
-
-            try {
-                const response = await fetch('/api/users/resend-verification/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCSRFToken()
-                    },
-                    body: JSON.stringify({ email })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showSuccess('Verification code sent successfully!');
-                } else {
-                    showError(data.message || 'Failed to resend code. Please try again.');
-                }
-            } catch (error) {
-                showError('Network error. Please check your connection and try again.');
-            } finally {
-                resendButton.disabled = false;
-            }
-        });
-
-        // Auto-format the code input
-        document.getElementById('code').addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/\D/g, '');
         });
     </script>
 </body>

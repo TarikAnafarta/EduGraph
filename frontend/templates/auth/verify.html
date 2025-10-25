@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - EduGraph</title>
+    <title>Hesap Doğrulama - EduGraph</title>
     <style>
         * {
             margin: 0;
@@ -64,17 +64,14 @@
             border-radius: 10px;
             font-size: 1rem;
             transition: border-color 0.3s ease;
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
-        }
-
-        .password-requirements {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 0.5rem;
         }
 
         .auth-button {
@@ -88,6 +85,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s ease;
+            margin-bottom: 1rem;
         }
 
         .auth-button:hover {
@@ -98,6 +96,12 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .auth-button.secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
         }
 
         .auth-links {
@@ -161,56 +165,47 @@
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Join EduGraph</h1>
-            <p>Create your account to get started</p>
+            <h1>Hesabınızı Doğrulayın</h1>
+            <p>E-postanıza gönderilen doğrulama kodunu girin</p>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;"></div>
         <div id="success-message" class="success-message" style="display: none;"></div>
 
-        <form id="register-form">
+        <form id="verify-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" required>
+                <label for="code">Doğrulama Kodu</label>
+                <input type="text" id="code" name="code" required maxlength="6" placeholder="000000">
             </div>
 
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
-            </div>
+            <button type="submit" class="auth-button" id="verify-button">
+                Hesabı Doğrula
+            </button>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-                <div class="password-requirements">
-                    Password must be at least 8 characters long
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="confirm-password">Confirm Password</label>
-                <input type="password" id="confirm-password" name="confirm-password" required>
-            </div>
-
-            <button type="submit" class="auth-button" id="register-button">
-                Create Account
+            <button type="button" class="auth-button secondary" id="resend-button">
+                Kodu Tekrar Gönder
             </button>
         </form>
 
-        <div class="loading" id="loading">Creating account...</div>
+        <div class="loading" id="loading">Doğrulanıyor...</div>
 
         <div class="auth-links">
-            <a href="/login">Already have an account? Sign in</a>
+            <a href="/login">Giriş Sayfasına Dön</a>
         </div>
     </div>
 
     <script>
-        const registerForm = document.getElementById('register-form');
-        const registerButton = document.getElementById('register-button');
+        const verifyForm = document.getElementById('verify-form');
+        const verifyButton = document.getElementById('verify-button');
+        const resendButton = document.getElementById('resend-button');
         const loading = document.getElementById('loading');
         const errorMessage = document.getElementById('error-message');
         const successMessage = document.getElementById('success-message');
+
+        // Get email from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
 
         function showError(message) {
             errorMessage.textContent = message;
@@ -249,68 +244,92 @@
             return '';
         }
 
-        registerForm.addEventListener('submit', async (e) => {
+        verifyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessages();
 
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
+            const code = document.getElementById('code').value;
 
-            // Validate passwords match
-            if (password !== confirmPassword) {
-                showError('Passwords do not match.');
+            if (!email) {
+                showError('E-posta bulunamadı. Lütfen tekrar kayıt olmayı deneyin.');
                 return;
             }
 
-            // Validate password length
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters long.');
+            if (code.length !== 6) {
+                showError('Lütfen 6 haneli doğrulama kodunu girin.');
                 return;
             }
 
-            registerButton.disabled = true;
+            verifyButton.disabled = true;
             loading.style.display = 'block';
 
             try {
-                const response = await fetch('/api/users/register/', {
+                const response = await fetch('/api/users/verify/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCSRFToken()
                     },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ email, code })
                 });
 
                 const data = await response.json();
 
-                if (response.ok || response.status === 200) {
-                    showSuccess(data.message || 'Account created successfully! Redirecting to verification...');
+                if (response.ok) {
+                    showSuccess('Hesap başarıyla doğrulandı! Yönlendiriliyorsunuz...');
+                    // Try to auto-login the user
+                    // Since we don't have password here, redirect to complete profile
                     setTimeout(() => {
-                        window.location.href = `/verify?email=${encodeURIComponent(email)}`;
+                        window.location.href = `/login?verified=true&email=${encodeURIComponent(email)}`;
                     }, 2000);
                 } else {
-                    // Handle various error cases
-                    if (data.message) {
-                        showError(data.message);
-                    } else if (data.email) {
-                        showError(data.email[0]);
-                    } else if (data.name) {
-                        showError(data.name[0]);
-                    } else if (data.password) {
-                        showError(data.password[0]);
-                    } else {
-                        showError('Registration failed. Please try again.');
-                    }
+                    showError(data.message || 'Doğrulama başarısız. Lütfen tekrar deneyin.');
                 }
             } catch (error) {
-                console.error('Registration error:', error);
-                showError('Network error. Please check your connection and try again.');
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
             } finally {
-                registerButton.disabled = false;
+                verifyButton.disabled = false;
                 loading.style.display = 'none';
             }
+        });
+
+        resendButton.addEventListener('click', async () => {
+            hideMessages();
+
+            if (!email) {
+                showError('E-posta bulunamadı. Lütfen tekrar kayıt olmayı deneyin.');
+                return;
+            }
+
+            resendButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/users/resend-verification/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Doğrulama kodu başarıyla gönderildi!');
+                } else {
+                    showError(data.message || 'Kod tekrar gönderilemedi. Lütfen tekrar deneyin.');
+                }
+            } catch (error) {
+                showError('Ağ hatası. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.');
+            } finally {
+                resendButton.disabled = false;
+            }
+        });
+
+        // Auto-format the code input
+        document.getElementById('code').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
         });
     </script>
 </body>

@@ -22,9 +22,9 @@ EduGraph is a modular system for visualizing curriculum learning graphs with int
 ## Technology Stack
 
 - **Backend**: Django, Django REST Framework
-- **Frontend**: D3.js, Vis.js
+- **Frontend**: D3.js
 - **Data Format**: JSON
-- **Database**: PostgreSQL (SQLite supported for development)
+- **Database**: PostgreSQL
 
 ## Getting Started
 
@@ -43,7 +43,7 @@ The easiest way to get started. Docker handles all dependencies and database set
 Copy-Item .env.example .env
 
 # Start all services (web + database)
-docker-compose up -d
+docker-compose up
 
 # Create a superuser for admin access
 docker-compose exec web python manage.py createsuperuser
@@ -74,11 +74,11 @@ Once the application is running, you can access:
 ### Authentication
 - `POST /api/users/login/` - User login
 - `POST /api/users/register/` - User registration
-- `GET /api/users/verify/` - Email verification
+- `POST /api/users/verify/` - Email verification
 
 ### Views
 - `/dashboard/` - Main dashboard
-- `/api/graph/view/` - Interactive graph visualization
+- `/graph/` - Interactive graph visualization (also available at `/api/graph/view/`)
 - `/admin/` - Django admin panel (requires superuser)
 
 ## License
@@ -87,5 +87,4 @@ All rights reserved - see the [LICENSE](LICENSE) file for details.
 
 ### Third-Party Libraries
 - D3.js (BSD License)
-- Vis.js (Apache License 2.0)
 - Django (BSD License)
