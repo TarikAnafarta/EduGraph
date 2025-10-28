@@ -1,32 +1,11 @@
-import hashlib
 import logging
-from django.shortcuts import redirect
-from django.utils import timezone
-from django.conf import settings
-from requests.models import HTTPBasicAuth
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-import os
-from collections import defaultdict
-from functools import reduce
-from operator import or_
-
-import requests
-from dateutil.relativedelta import relativedelta
-from django.contrib.auth import logout
-from django.contrib.auth.password_validation import validate_password
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.db.models import Q
-from django.db.models.functions import Lower
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from requests.models import HTTPBasicAuth
+from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -34,7 +13,7 @@ from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-from backend.users.models import PasswordResetToken, RecentAction, User, VerificationCode
+from backend.users.models import PasswordResetToken, User, VerificationCode
 from backend.users.serializers import (
     UserChangePasswordSerializer,
     UserCompleteProfileSerializer,
@@ -88,6 +67,18 @@ class UserAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request, *args, **kwargs):
+        """Handle profile picture upload separately with PATCH method"""
+        user = self.request.user
+        
+        if 'profile_picture' in request.FILES:
+            user.profile_picture = request.FILES['profile_picture']
+            user.save()
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({"message": "No profile picture provided"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
