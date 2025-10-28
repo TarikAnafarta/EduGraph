@@ -1,14 +1,24 @@
 from rest_framework import serializers
+from cloudinary.templatetags import cloudinary
 
 from backend.common.serializers import UUIDModelSerializer
 from backend.users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ("id", "email", "name", "is_staff", "is_active", "grade", "track", "profile_completed", "date_joined")
+        fields = ("id", "email", "name", "is_staff", "is_active", "grade", "track", "profile_completed", "date_joined", "profile_picture")
         read_only_fields = ("id", "email", "is_staff", "is_active", "profile_completed", "date_joined")
+    
+    def get_profile_picture(self, obj):
+        """Return the full Cloudinary URL for the profile picture"""
+        if obj.profile_picture:
+            # Use Cloudinary's build_url to get the full URL
+            return obj.profile_picture.url
+        return None
     
     def validate(self, attrs):
         # Validate that if grade > 8, track must be provided and not 'lgs'

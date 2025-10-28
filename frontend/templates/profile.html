@@ -71,6 +71,49 @@
             font-size: 2.5rem;
             color: white;
             font-weight: bold;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .profile-avatar:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        #profile-picture-input {
+            display: none;
         }
 
         .profile-info h2 {
@@ -227,7 +270,11 @@
         
         <div class="profile-card">
             <div class="profile-header">
-                <div class="profile-avatar" id="avatar">U</div>
+                <div class="profile-avatar" id="avatar" onclick="document.getElementById('profile-picture-input').click()">
+                    U
+                    <div class="avatar-overlay">📷 Resim Değiştir</div>
+                </div>
+                <input type="file" id="profile-picture-input" accept="image/*" onchange="uploadProfilePicture(event)">
                 <div class="profile-info">
                     <h2 id="user-name">Yükleniyor...</h2>
                     <p id="user-email">Yükleniyor...</p>
@@ -357,8 +404,21 @@
             }
 
             // Update avatar
-            const firstLetter = (user.name || user.email || 'K')[0].toUpperCase();
-            document.getElementById('avatar').textContent = firstLetter;
+            const avatarDiv = document.getElementById('avatar');
+            if (user.profile_picture) {
+                // Display profile picture
+                avatarDiv.innerHTML = `
+                    <img src="${user.profile_picture}" alt="Profile Picture">
+                    <div class="avatar-overlay">📷 Resim Değiştir</div>
+                `;
+            } else {
+                // Display first letter
+                const firstLetter = (user.name || user.email || 'K')[0].toUpperCase();
+                avatarDiv.innerHTML = `
+                    ${firstLetter}
+                    <div class="avatar-overlay">📷 Resim Ekle</div>
+                `;
+            }
         }
 
         function toggleEditMode() {
@@ -472,8 +532,19 @@
                     document.getElementById('user-name').textContent = updatedUser.name;
                     
                     // Update avatar
-                    const firstLetter = (updatedUser.name || updatedUser.email || 'K')[0].toUpperCase();
-                    document.getElementById('avatar').textContent = firstLetter;
+                    const avatarDiv = document.getElementById('avatar');
+                    if (updatedUser.profile_picture) {
+                        avatarDiv.innerHTML = `
+                            <img src="${updatedUser.profile_picture}" alt="Profile Picture">
+                            <div class="avatar-overlay">📷 Resim Değiştir</div>
+                        `;
+                    } else {
+                        const firstLetter = (updatedUser.name || updatedUser.email || 'K')[0].toUpperCase();
+                        avatarDiv.innerHTML = `
+                            ${firstLetter}
+                            <div class="avatar-overlay">📷 Resim Ekle</div>
+                        `;
+                    }
 
                     showAlert('Profil başarıyla güncellendi! ✓', 'success');
 
@@ -502,6 +573,62 @@
                 saveBtn.disabled = false;
                 cancelBtn.disabled = false;
                 saveBtn.textContent = 'Değişiklikleri Kaydet';
+            }
+        }
+
+        async function uploadProfilePicture(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showAlert('Lütfen bir resim dosyası seçin', 'error');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('Dosya boyutu en fazla 5MB olabilir', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('profile_picture', file);
+
+            try {
+                showAlert('Profil resmi yükleniyor...', 'success');
+
+                const response = await fetch('/api/users/me/', {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Token ${userToken}`,
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    originalUserData = { ...updatedUser };
+                    
+                    // Update avatar display
+                    const avatarDiv = document.getElementById('avatar');
+                    if (updatedUser.profile_picture) {
+                        avatarDiv.innerHTML = `
+                            <img src="${updatedUser.profile_picture}" alt="Profile Picture">
+                            <div class="avatar-overlay">📷 Resim Değiştir</div>
+                        `;
+                    }
+
+                    showAlert('Profil resmi başarıyla güncellendi! ✓', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showAlert(errorData.message || 'Profil resmi yüklenirken bir hata oluştu', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to upload profile picture:', error);
+                showAlert('Profil resmi yüklenirken bir hata oluştu', 'error');
             }
         }
 

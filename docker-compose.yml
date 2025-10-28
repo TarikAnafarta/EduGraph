@@ -44,6 +44,9 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,*}
+      - CLOUDINARY_NAME=${CLOUDINARY_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     volumes:
       - .:/app
       - static_volume:/app/staticfiles

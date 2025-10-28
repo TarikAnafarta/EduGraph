@@ -6,6 +6,9 @@ Django settings for EduGraph backend.
 from pathlib import Path
 from decouple import config, Csv
 import os
+from dotenv import load_dotenv
+import cloudinary
+load_dotenv()
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,6 +25,8 @@ AUTH_USER_MODEL = 'users.User'
 
 # Application definition
 INSTALLED_APPS = [
+    'cloudinary',
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,6 +40,36 @@ INSTALLED_APPS = [
     'backend.artifacts',
     'backend.users',
 ]
+
+# Cloudinary configuration
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
+# Django 4.2+ STORAGES configuration
+STORAGES = {
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
+# Compatibility setting for older django-cloudinary-storage versions
+# This prevents the package from checking the deprecated STATICFILES_STORAGE setting
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+MEDIA_URL = '/media/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

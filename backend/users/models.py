@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from cloudinary.models import CloudinaryField
 
 from backend.users.managers import UserManager
 from backend.users.utils import (
@@ -47,6 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     grade = models.IntegerField("Grade", choices=GRADE_CHOICES, null=True, blank=True, help_text="Student's current grade (5-12)")
     track = models.CharField("Track", max_length=10, choices=TRACK_CHOICES, null=True, blank=True, help_text="Academic track (LGS, Sayısal, Sözel)")
     profile_completed = models.BooleanField(default=False, help_text="Whether user has completed their profile information")
+    profile_picture = CloudinaryField('profile_picture', null=True, blank=True, folder='profile_pictures', help_text="User's profile picture")
 
     USERNAME_FIELD = "email"
 
@@ -73,42 +75,6 @@ class VerificationCode(models.Model):
 
         recipient_list = [self.user.email]
         send_mail(subject, plain_text_message, None, recipient_list, html_message=html_message)
-
-
-class RecentAction(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="recent_actions",
-        help_text="The user associated with this recent action.",
-    )
-    item_id = models.UUIDField(help_text="The ID of the item (e.g., project, document, etc.) the user interacted with.")
-    item_type = models.CharField(
-        max_length=50,
-        help_text="The type of item (e.g., 'project', 'document', 'task').",
-    )
-    last_accessed_at = models.DateTimeField(
-        auto_now=True,
-        help_text="Timestamp of the last time this item was accessed by the user.",
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "item_id", "item_type"],
-                name="unique_user_item_action",
-            )
-        ]
-        ordering = ["-last_accessed_at"]
-        indexes = [
-            models.Index(fields=["user", "item_type"]),
-            models.Index(fields=["last_accessed_at"]),
-        ]
-        verbose_name = "Recent Action"
-        verbose_name_plural = "Recent Actions"
-
-    def __str__(self):
-        return f"User {self.user.name} recently accessed {self.item_type} {self.item_id}"
 
 
 class PasswordResetToken(models.Model):
