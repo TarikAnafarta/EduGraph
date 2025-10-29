@@ -343,11 +343,8 @@
                         if (userResponse.ok) {
                             const user = await userResponse.json();
                             if (!user.profile_completed) {
-                                // Redirect to complete profile
-                                showSuccess('Giriş başarılı! Lütfen profilinizi tamamlayın...');
-                                setTimeout(() => {
-                                    window.location.href = '/complete-profile/';
-                                }, 1500);
+                                // Redirect immediately to complete profile
+                                window.location.href = '/complete-profile/';
                                 return;
                             }
                         }
@@ -355,11 +352,8 @@
                         console.error('Error checking profile status:', error);
                     }
                     
-                    // Profile completed or check failed, go to dashboard
-                    showSuccess('Giriş başarılı! Yönlendiriliyorsunuz...');
-                    setTimeout(() => {
-                        window.location.href = '/dashboard/';
-                    }, 1500);
+                    // Profile completed or check failed, go to dashboard immediately
+                    window.location.href = '/dashboard/';
                 } else if (response.status === 403 && data.message === 'Account is inactive.') {
                     // Show verification prompt instead of just error
                     showVerificationPrompt();
