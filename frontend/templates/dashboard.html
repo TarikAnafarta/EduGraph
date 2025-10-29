@@ -33,22 +33,83 @@
         .navbar .user-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
+            position: relative;
         }
 
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .avatar, .avatar-fallback {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e5e7eb;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .avatar { display: none; }
+
+        .user-name-btn {
+            background: transparent;
+            color: #fff;
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: background 0.3s ease;
+            padding: 0.25rem 0.4rem;
+            border-radius: 6px;
         }
 
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .user-name-btn:hover { background: rgba(255,255,255,0.12); }
+
+        .user-name-btn .caret { opacity: 0.9; font-size: 0.85rem; }
+
+        .dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            min-width: 180px;
+            background: #fff;
+            color: #333;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            padding: 0.5rem;
+            display: none;
+            z-index: 50;
         }
+
+        .dropdown.show { display: block; }
+
+        .dropdown a,
+        .dropdown button {
+            display: block;
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            text-decoration: none;
+            color: #333;
+            background: transparent;
+            border: none;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .dropdown a:hover,
+        .dropdown button:hover { background: #f3f4f6; }
 
         .container {
             max-width: 1200px;
@@ -135,8 +196,18 @@
     <nav class="navbar">
         <h1>EduGraph</h1>
         <div class="user-info">
-            <span id="user-name">Yükleniyor...</span>
-            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+            <div class="user-menu" id="user-menu">
+                <button class="user-name-btn" id="user-menu-button" aria-haspopup="true" aria-expanded="false">
+                    <span id="user-name">Yükleniyor...</span>
+                    <img id="user-avatar" class="avatar" alt="Profil" />
+                    <div id="avatar-fallback" class="avatar-fallback">U</div>
+                    <span class="caret">▾</span>
+                </button>
+                <div class="dropdown" id="user-dropdown" role="menu" aria-hidden="true">
+                    <a href="/profile" id="profile-link">Profilim</a>
+                    <button id="logout-btn">Çıkış Yap</button>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -165,12 +236,6 @@
                 <h3>📈 İlerlemeyi İzle</h3>
                 <p>Öğrenme ilerlemesini izleyin ve geliştirilmesi gereken alanları belirleyin.</p>
                 <button class="feature-btn" onclick="alert('Özellik yakında geliyor!')">Analitikleri Görüntüle</button>
-            </div>
-
-            <div class="feature-card">
-                <h3>👤 Profil</h3>
-                <p>Kişisel bilgilerinizi ve hesap detaylarınızı görüntüleyin ve güncelleyin.</p>
-                <button class="feature-btn" onclick="window.location.href='/profile'">Profili Görüntüle</button>
             </div>
         </div>
     </div>
@@ -219,14 +284,27 @@
 
                 if (response.ok) {
                     const user = await response.json();
-                    
-                    // Check if profile is completed
                     if (!user.profile_completed) {
                         window.location.href = '/complete-profile/';
                         return;
                     }
-                    
-                    document.getElementById('user-name').textContent = user.name || user.email;
+
+                    const nameEl = document.getElementById('user-name');
+                    const avatarImg = document.getElementById('user-avatar');
+                    const avatarFallback = document.getElementById('avatar-fallback');
+
+                    nameEl.textContent = user.name || user.email;
+
+                    if (user.profile_picture) {
+                        avatarImg.src = user.profile_picture;
+                        avatarImg.style.display = 'block';
+                        avatarFallback.style.display = 'none';
+                    } else {
+                        const initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+                        avatarFallback.textContent = initial || 'U';
+                        avatarFallback.style.display = 'flex';
+                        avatarImg.style.display = 'none';
+                    }
                 } else {
                     localStorage.removeItem('authToken');
                     window.location.href = '/login';
@@ -238,7 +316,6 @@
 
         async function logout() {
             const token = localStorage.getItem('authToken');
-            
             try {
                 await fetch('/api/users/logout/', {
                     method: 'POST',
@@ -248,16 +325,47 @@
                         'X-CSRFToken': getCSRFToken()
                     }
                 });
-            } catch (error) {
-                console.error('Logout error:', error);
-            } finally {
+            } catch (_) {}
+            finally {
                 localStorage.removeItem('authToken');
                 window.location.href = '/login';
             }
         }
 
-        // Load user info when page loads
-        document.addEventListener('DOMContentLoaded', loadUserInfo);
+        function setupUserMenu() {
+            const menuBtn = document.getElementById('user-menu-button');
+            const dropdown = document.getElementById('user-dropdown');
+            const menu = document.getElementById('user-menu');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            function closeDropdown() {
+                dropdown.classList.remove('show');
+                menuBtn.setAttribute('aria-expanded', 'false');
+                dropdown.setAttribute('aria-hidden', 'true');
+            }
+            function toggleDropdown(e) {
+                e.stopPropagation();
+                const willShow = !dropdown.classList.contains('show');
+                if (willShow) {
+                    dropdown.classList.add('show');
+                    menuBtn.setAttribute('aria-expanded', 'true');
+                    dropdown.setAttribute('aria-hidden', 'false');
+                } else {
+                    closeDropdown();
+                }
+            }
+
+            menuBtn.addEventListener('click', toggleDropdown);
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target)) closeDropdown();
+            });
+            logoutBtn.addEventListener('click', logout);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupUserMenu();
+            loadUserInfo();
+        });
     </script>
 </body>
 </html>
