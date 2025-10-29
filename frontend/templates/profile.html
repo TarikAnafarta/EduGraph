@@ -72,49 +72,48 @@
             color: white;
             font-weight: bold;
             position: relative;
-            cursor: pointer;
-            overflow: hidden;
+            cursor: default; /* avatar tıklanamaz */
+            overflow: hidden; /* resim daire içinde kalsın */
             transition: all 0.3s ease;
         }
-
-        .profile-avatar:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
+        /* Avatar içindeki img düzgün boyut ve kırpma ile görünmeli */
         .profile-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
             border-radius: 50%;
+            display: block;
         }
 
-        .avatar-overlay {
+        /* Eski hover overlay'i tamamen gizle */
+        .avatar-overlay { display: none !important; }
+
+        /* Avatar ve kamera butonu için sarmalayıcı */
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Kamera butonu avatarın DIŞINDA sol-alt */
+        .avatar-camera-btn {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            left: -10px; /* tamamen dışarıda olsun */
+            bottom: -10px; /* tamamen dışarıda olsun */
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            color: white;
-            font-size: 0.9rem;
-            text-align: center;
-            padding: 10px;
+            background: #ffffff;
+            border: 2px solid #ffffff;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            padding: 0;
+            z-index: 2; /* avatar üstünde */
         }
-
-        .profile-avatar:hover .avatar-overlay {
-            opacity: 1;
-        }
-
-        #profile-picture-input {
-            display: none;
-        }
+        .avatar-camera-btn:hover { background: #f3f4f6; }
+        .avatar-camera-btn svg { width: 18px; height: 18px; color: #4b5563; }
 
         .profile-info h2 {
             color: #333;
@@ -255,13 +254,61 @@
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+
+        /* --- Profile picture cropper modal (compact) --- */
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
+            display: none; align-items: center; justify-content: center; 
+            z-index: 1000; padding: 1rem; 
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            width: 100%; max-width: 620px; background: #fff; border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;
+        }
+        .modal-header { padding: 1rem 1.25rem; font-weight: 700; font-size: 1.1rem; color:#333; }
+        .modal-body { padding: 0 1.25rem 1rem; }
+        .crop-frame {
+            position: relative; margin: 0 auto; background: #2b2f36; border-radius: 12px; 
+            width: min(92vw, 560px); height: var(--h, 260px); /* height set dynamically to circle diameter */
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.08);
+        }
+        #crop-image { 
+            position: absolute; top: 50%; left: 50%; will-change: transform; 
+            user-select: none; -webkit-user-drag: none; pointer-events: auto;
+        }
+        .circle-mask { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: var(--d, 240px); height: var(--d, 240px); border-radius: 50%; 
+            box-shadow: 0 0 0 2000px rgba(0,0,0,0.55); border: 2px dashed #7cd992; 
+            pointer-events: none;
+        }
+        .controls { display: grid; gap: .75rem; margin-top: 1rem; }
+        .range-row { display:flex; align-items:center; gap: .75rem; }
+        .range-row label { width: 90px; color:#555; font-size: .9rem; }
+        .range-row input[type="range"] { flex:1; }
+        .modal-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem; padding: 0 0 .75rem; }
+        .btn-light { background:#f1f3f5; color:#333; }
+        .btn-green { background:#28a745; color:#fff; }
+        .btn-light, .btn-green {
+            border: none; padding: .6rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; 
+        }
+        .btn-light:hover { background:#e9ecef; }
+        .btn-green:hover { background:#218838; }
+        .btn-upload { display: inline-flex; align-items:center; gap:.5rem; background:#e8f7ec; color:#257942; border:1px solid #c6efce; }
+        .btn-upload:hover { background:#dcf3e3; }
+
+        @media (max-width: 520px){
+            .circle-mask { width: var(--d, 200px); height: var(--d, 200px); }
+            .modal { max-width: 96vw; }
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
         <h1 onclick="window.location.href='/dashboard/'">📚 EduGraph</h1>
         <div class="user-info">
-            <a href="/dashboard/" class="back-btn">← Panoya Dön</a>
+            <a href="/dashboard/" class="back-btn">Geri Dön</a>
         </div>
     </div>
 
@@ -270,11 +317,15 @@
         
         <div class="profile-card">
             <div class="profile-header">
-                <div class="profile-avatar" id="avatar" onclick="document.getElementById('profile-picture-input').click()">
-                    U
-                    <div class="avatar-overlay">📷 Resim Değiştir</div>
+                <div class="avatar-wrapper">
+                    <div class="profile-avatar" id="avatar"></div>
+                    <button class="avatar-camera-btn" id="avatar-camera-btn" type="button" title="Profil fotoğrafını değiştir" aria-label="Profil fotoğrafını değiştir">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
+                            <path d="M512 144v288c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V144c0-26.5 21.5-48 48-48h88l12.3-32.9c7-18.7 24.9-31.1 44.9-31.1h125.5c20 0 37.9 12.4 44.9 31.1L376 96h88c26.5 0 48 21.5 48 48zM376 288c0-66.2-53.8-120-120-120s-120 53.8-120 120 53.8 120 120 120 120-53.8 120-120zm-32 0c0 48.5-39.5 88-88 88s-88-39.5-88-88 39.5-88 88-88 88 39.5 88 88z"></path>
+                        </svg>
+                    </button>
                 </div>
-                <input type="file" id="profile-picture-input" accept="image/*" onchange="uploadProfilePicture(event)">
+                <input type="file" id="profile-picture-input" accept="image/*" onchange="uploadProfilePicture(event)" style="display:none;">
                 <div class="profile-info">
                     <h2 id="user-name">Yükleniyor...</h2>
                     <p id="user-email">Yükleniyor...</p>
@@ -304,6 +355,31 @@
                 <button class="btn btn-primary" id="edit-btn" onclick="toggleEditMode()">Profili Düzenle</button>
                 <button class="btn btn-success" id="save-btn" onclick="saveProfile()" style="display: none;">Değişiklikleri Kaydet</button>
                 <button class="btn btn-secondary" id="cancel-btn" onclick="cancelEdit()" style="display: none;">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compact Cropper Modal -->
+    <div id="cropper-overlay" class="modal-overlay" aria-modal="true" role="dialog">
+        <div class="modal">
+            <div class="modal-header">Profil Fotoğrafını Güncelle</div>
+            <div class="modal-body">
+                <div id="crop-frame" class="crop-frame">
+                    <img id="crop-image" alt="crop" />
+                    <div id="circle-mask" class="circle-mask"></div>
+                </div>
+                <div class="controls">
+                    <div class="range-row">
+                        <label for="zoom-range">Yakınlaştır</label>
+                        <input id="zoom-range" type="range" min="100" max="300" value="100" />
+                        <span id="zoom-label" style="width:48px; text-align:right; color:#666; font-size:.9rem;">100%</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="reselect-btn" type="button" class="btn-light btn-upload">📤 Dosya Seç</button>
+                    <button id="cancel-crop-btn" type="button" class="btn-light">İptal</button>
+                    <button id="save-crop-btn" type="button" class="btn-green">Kaydet</button>
+                </div>
             </div>
         </div>
     </div>
@@ -356,6 +432,7 @@
                     const user = await response.json();
                     originalUserData = { ...user };
                     displayUserInfo(user);
+                    ensureCameraButton(); // keep the camera button after rendering avatar
                 } else {
                     localStorage.removeItem('authToken');
                     window.location.href = '/login';
@@ -406,18 +483,10 @@
             // Update avatar
             const avatarDiv = document.getElementById('avatar');
             if (user.profile_picture) {
-                // Display profile picture
-                avatarDiv.innerHTML = `
-                    <img src="${user.profile_picture}" alt="Profile Picture">
-                    <div class="avatar-overlay">📷 Resim Değiştir</div>
-                `;
+                avatarDiv.innerHTML = `<img src="${user.profile_picture}" alt="Profile Picture">`;
             } else {
-                // Display first letter
                 const firstLetter = (user.name || user.email || 'K')[0].toUpperCase();
-                avatarDiv.innerHTML = `
-                    ${firstLetter}
-                    <div class="avatar-overlay">📷 Resim Ekle</div>
-                `;
+                avatarDiv.innerHTML = `${firstLetter}`;
             }
         }
 
@@ -536,13 +605,11 @@
                     if (updatedUser.profile_picture) {
                         avatarDiv.innerHTML = `
                             <img src="${updatedUser.profile_picture}" alt="Profile Picture">
-                            <div class="avatar-overlay">📷 Resim Değiştir</div>
                         `;
                     } else {
                         const firstLetter = (updatedUser.name || updatedUser.email || 'K')[0].toUpperCase();
                         avatarDiv.innerHTML = `
                             ${firstLetter}
-                            <div class="avatar-overlay">📷 Resim Ekle</div>
                         `;
                     }
 
@@ -576,51 +643,203 @@
             }
         }
 
-        async function uploadProfilePicture(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
+        // --- Simple horizontal cropper state ---
+        let cropState = {
+            url: null,
+            imgEl: null,
+            frameEl: null,
+            maskEl: null,
+            d: 240, // circle diameter (px)
+            naturalW: 0,
+            naturalH: 0,
+            scale: 1,
+            minScale: 1,
+            offsetX: 0, // visible px shift after scaling
+            offsetY: 0, // NEW: vertical shift
+            dragging: false,
+            dragStartX: 0,
+            dragStartY: 0, // NEW
+            startOffsetX: 0,
+            startOffsetY: 0, // NEW
+        };
 
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                showAlert('Lütfen bir resim dosyası seçin', 'error');
-                return;
-            }
+        function openCropModal(file){
+            const overlay = document.getElementById('cropper-overlay');
+            cropState.frameEl = document.getElementById('crop-frame');
+            cropState.imgEl = document.getElementById('crop-image');
+            cropState.maskEl = document.getElementById('circle-mask');
 
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showAlert('Dosya boyutu en fazla 5MB olabilir', 'error');
-                return;
-            }
+            // Compute circle diameter from frame width and make frame height equal to circle size
+            const rect = cropState.frameEl.getBoundingClientRect();
+            const frameW = rect.width || cropState.frameEl.clientWidth || 560;
+            cropState.d = Math.floor(frameW - 80); // some horizontal breathing space
+            cropState.d = Math.max(160, Math.min(320, cropState.d)); // clamp compact size
+            cropState.frameEl.style.height = cropState.d + 'px'; // shrink dark background to circle height
+            cropState.maskEl.style.setProperty('--d', cropState.d + 'px');
 
+            // Clean previous url
+            if(cropState.url){ URL.revokeObjectURL(cropState.url); }
+            cropState.url = URL.createObjectURL(file);
+
+            // Load image
+            cropState.imgEl.onload = () => {
+                cropState.naturalW = cropState.imgEl.naturalWidth || cropState.imgEl.width;
+                cropState.naturalH = cropState.imgEl.naturalHeight || cropState.imgEl.height;
+
+                const needW = cropState.d / cropState.naturalW;
+                const needH = cropState.d / cropState.naturalH;
+                cropState.minScale = Math.max(needW, needH);
+                cropState.scale = cropState.minScale;
+                cropState.offsetX = 0;
+                cropState.offsetY = 0; // NEW
+                document.getElementById('zoom-range').value = 100;
+                document.getElementById('zoom-label').textContent = '100%';
+                updateCropTransform();
+            };
+            cropState.imgEl.src = cropState.url;
+
+            // Setup drag handlers (horizontal only)
+            const onDown = (clientX, clientY) => {
+                cropState.dragging = true;
+                cropState.dragStartX = clientX;
+                cropState.dragStartY = clientY; // NEW
+                cropState.startOffsetX = cropState.offsetX;
+                cropState.startOffsetY = cropState.offsetY; // NEW
+            };
+            const onMove = (clientX, clientY) => {
+                if(!cropState.dragging) return;
+                const dx = clientX - cropState.dragStartX;
+                const dy = clientY - cropState.dragStartY; // NEW
+                cropState.offsetX = cropState.startOffsetX + dx;
+                cropState.offsetY = cropState.startOffsetY + dy; // NEW
+                updateCropTransform();
+            };
+            const onUp = () => { cropState.dragging = false; };
+
+            cropState.frameEl.onmousedown = (e)=> onDown(e.clientX, e.clientY);
+            window.onmousemove = (e)=> onMove(e.clientX, e.clientY);
+            window.onmouseup = onUp;
+
+            cropState.frameEl.ontouchstart = (e)=>{ if(e.touches[0]) onDown(e.touches[0].clientX, e.touches[0].clientY); };
+            window.ontouchmove = (e)=>{ if(e.touches[0]) onMove(e.touches[0].clientX, e.touches[0].clientY); };
+            window.ontouchend = onUp;
+
+            // Zoom handler
+            const zoom = document.getElementById('zoom-range');
+            zoom.oninput = (e)=>{
+                const factor = Number(e.target.value) / 100; // 1.0 .. 3.0
+                cropState.scale = cropState.minScale * factor; // up to 3x of min
+                document.getElementById('zoom-label').textContent = Math.round(factor*100) + '%';
+                updateCropTransform();
+            };
+
+            // Mouse wheel zoom support
+            cropState.frameEl.onwheel = (e) => {
+                e.preventDefault();
+                const zoomInput = document.getElementById('zoom-range');
+                const min = Number(zoomInput.min) || 100;
+                const max = Number(zoomInput.max) || 300;
+                const step = e.ctrlKey ? 10 : 5; // Ctrl ile daha hızlı zoom
+                let val = Number(zoomInput.value) || 100;
+                val += (e.deltaY < 0 ? step : -step); // aşağı: yakınlaş, yukarı: uzaklaş
+                val = Math.max(min, Math.min(max, val));
+                zoomInput.value = String(val);
+
+                const factor = val / 100;
+                cropState.scale = cropState.minScale * factor;
+                document.getElementById('zoom-label').textContent = Math.round(factor*100) + '%';
+                updateCropTransform();
+            };
+
+            // Buttons
+            document.getElementById('cancel-crop-btn').onclick = closeCropModal;
+            document.getElementById('save-crop-btn').onclick = saveCroppedProfilePicture;
+            document.getElementById('reselect-btn').onclick = () => {
+                const input = document.getElementById('profile-picture-input');
+                input.value = '';
+                input.click();
+            };
+
+            overlay.classList.add('open');
+        }
+
+        function closeCropModal(){
+            const overlay = document.getElementById('cropper-overlay');
+            overlay.classList.remove('open');
+            // cleanup listeners
+            window.onmousemove = null; window.onmouseup = null;
+            window.ontouchmove = null; window.ontouchend = null;
+            if (cropState.frameEl) { cropState.frameEl.onwheel = null; }
+            // release object url
+            if(cropState.url){ URL.revokeObjectURL(cropState.url); cropState.url = null; }
+        }
+
+        function updateCropTransform(){
+            const W = cropState.naturalW * cropState.scale;
+            const H = cropState.naturalH * cropState.scale;
+            const maxOffsetX = Math.max(0, (W - cropState.d)/2);
+            const maxOffsetY = Math.max(0, (H - cropState.d)/2); // NEW
+            // clamp shifts so circle alanı her zaman kaplansın
+            cropState.offsetX = Math.min(maxOffsetX, Math.max(-maxOffsetX, cropState.offsetX));
+            cropState.offsetY = Math.min(maxOffsetY, Math.max(-maxOffsetY, cropState.offsetY)); // NEW
+            // apply transform
+            const img = cropState.imgEl;
+            img.style.transform = `translate(-50%, -50%) scale(${cropState.scale}) translate(${(cropState.offsetX / cropState.scale)}px, ${(cropState.offsetY / cropState.scale)}px)`;
+        }
+
+        async function saveCroppedProfilePicture(){
+            // Render current view (circle bounding square) to a canvas and upload
+            const d = cropState.d;
+            const canvas = document.createElement('canvas');
+            canvas.width = d; canvas.height = d;
+            const ctx = canvas.getContext('2d');
+
+            const W = cropState.naturalW * cropState.scale;
+            const H = cropState.naturalH * cropState.scale;
+            const x = (d/2 - W/2) + cropState.offsetX; // horizontal offset in displayed px
+            const y = (d/2 - H/2); // vertically centered
+
+            // Fill background white for JPEG
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0,0,d,d);
+            ctx.drawImage(cropState.imgEl, x, y, W, H);
+
+            const saveBtn = document.getElementById('save-crop-btn');
+            saveBtn.disabled = true; saveBtn.textContent = 'Yükleniyor...';
+
+            canvas.toBlob(async (blob)=>{
+                try {
+                    if(!blob){ throw new Error('Blob oluşturulamadı'); }
+                    await uploadCroppedImage(blob);
+                    closeCropModal();
+                } catch(err){
+                    console.error(err);
+                    showAlert('Profil resmi yüklenirken bir hata oluştu', 'error');
+                } finally {
+                    saveBtn.disabled = false; saveBtn.textContent = 'Kaydet';
+                }
+            }, 'image/jpeg', 0.92);
+        }
+
+        async function uploadCroppedImage(imageBlob){
             const formData = new FormData();
-            formData.append('profile_picture', file);
-
+            formData.append('profile_picture', imageBlob, 'profile.jpg');
             try {
                 showAlert('Profil resmi yükleniyor...', 'success');
-
                 const response = await fetch('/api/users/me/', {
                     method: 'PATCH',
-                    headers: {
-                        'Authorization': `Token ${userToken}`,
-                    },
+                    headers: { 'Authorization': `Token ${userToken}` },
                     body: formData
                 });
-
                 if (response.ok) {
                     const updatedUser = await response.json();
                     originalUserData = { ...updatedUser };
-                    
-                    // Update avatar display
                     const avatarDiv = document.getElementById('avatar');
                     if (updatedUser.profile_picture) {
                         avatarDiv.innerHTML = `
                             <img src="${updatedUser.profile_picture}" alt="Profile Picture">
-                            <div class="avatar-overlay">📷 Resim Değiştir</div>
                         `;
                     }
-
                     showAlert('Profil resmi başarıyla güncellendi! ✓', 'success');
                 } else {
                     const errorData = await response.json();
@@ -632,8 +851,32 @@
             }
         }
 
-        // Load user info when page loads
-        document.addEventListener('DOMContentLoaded', loadUserInfo);
+        // Replace file input handler to open cropper instead of direct upload
+        async function uploadProfilePicture(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showAlert('Lütfen bir resim dosyası seçin', 'error');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('Dosya boyutu en fazla 5MB olabilir', 'error');
+                return;
+            }
+            openCropModal(file);
+        }
+
+        // Sadece butonun tıklama davranışını bağla (buton dışarıda sabit)
+        function ensureCameraButton(){
+            const btn = document.getElementById('avatar-camera-btn');
+            if(!btn) return;
+            btn.onclick = () => document.getElementById('profile-picture-input').click();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ensureCameraButton();
+            loadUserInfo();
+        });
     </script>
 </body>
 </html>
