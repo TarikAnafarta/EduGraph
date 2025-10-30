@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 API Views for EduGraph curriculum graph visualization.
+Note: Legacy Django templates under artifacts/templates are deprecated and unused (React SPA handles UI).
 """
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from pathlib import Path
-import json
 
-from src import GraphGenerator, get_graph_data
+from src import get_graph_data
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -246,36 +242,4 @@ class GraphStatsAPIView(APIView):
                     "message": str(e)
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-class GraphVisualizationView(View):
-    """
-    View that returns the HTML visualization page.
-    
-    GET /api/graph/view/
-    
-    Returns: HTML page with the interactive graph visualization
-    """
-    
-    def get(self, request):
-        try:
-            # Load and process graph data
-            data_file = "shared/curriculum/matematik/matematik_kazanimlari_124_154.json"
-            nodes, links = get_graph_data(data_file)
-            
-            # Prepare data for template
-            context = {
-                'nodes_json': json.dumps(nodes, ensure_ascii=False),
-                'links_json': json.dumps(links, ensure_ascii=False),
-            }
-            
-            # Render using Django template system
-            return render(request, 'graph_view.html', context)
-            
-        except Exception as e:
-            return HttpResponse(
-                f"<html><body><h1>Error</h1><p>{str(e)}</p></body></html>",
-                content_type='text/html',
-                status=500
             )

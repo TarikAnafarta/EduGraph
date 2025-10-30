@@ -1,11 +1,6 @@
-# EduGraph - Curriculum Learning Graph Visualization
-# Core dependencies for the Python backend
-
-# Core Python standard library modules are used:
-# - json (for data loading and processing)
-# - pathlib (for file path operations)
-# - html (for HTML escaping)
-# - typing (for type hints)
+# EduGraph - Backend (Django + DRF)
+# This requirements.txt only applies to the Python backend.
+# The React frontend now lives in frontend/ and is managed with Node (npm/yarn).
 
 # Django and REST Framework for API
 Django>=4.2.0
@@ -25,19 +20,12 @@ python-dateutil>=2.8.0
 requests>=2.31.0
 python-decouple>=3.8
 
-# Optional web framework dependencies (if you want alternatives):
-# Flask>=2.3.0          # For web API integration
-# FastAPI>=0.104.0      # Alternative web framework
-# uvicorn>=0.24.0       # ASGI server for FastAPI
-
 # Development dependencies (uncomment if needed):
 # pytest>=7.4.0         # For testing
 # black>=23.9.0         # Code formatting
 # flake8>=6.1.0         # Linting
 # mypy>=1.6.0           # Type checking
 
-# Frontend visualization uses:
-# - D3.js (included in lib/ directory)
-# - Vis.js (included in lib/ directory) 
-# - Tom Select (included in lib/ directory)
-# - Pure CSS and JavaScript (no build tools required)
+# Notes:
+# - Static files for Django admin and apps are still collected via collectstatic.
+# - Frontend bundling (Vite) and dependencies are not listed here; see frontend/package.json.

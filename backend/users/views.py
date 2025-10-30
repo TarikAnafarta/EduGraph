@@ -1,5 +1,4 @@
 import logging
-from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import logout
@@ -24,24 +23,7 @@ from backend.users.serializers import (
     UserSerializer,
 )
 
-# Template views
-def login_view(request):
-    return render(request, 'auth/login.html')
-
-def register_view(request):
-    return render(request, 'auth/register.html')
-
-def verify_view(request):
-    return render(request, 'auth/verify.html')
-
-def dashboard_view(request):
-    return render(request, 'dashboard.html')
-
-def profile_view(request):
-    return render(request, 'profile.html')
-
-def complete_profile_view(request):
-    return render(request, 'auth/complete_profile.html')
+# Removed legacy template-based views (migrated to React SPA)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

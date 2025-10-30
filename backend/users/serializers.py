@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from cloudinary.templatetags import cloudinary
 
 from backend.common.serializers import UUIDModelSerializer
 from backend.users.models import User
