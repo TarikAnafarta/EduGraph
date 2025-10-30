@@ -14,7 +14,4 @@ urlpatterns = [
     path('graph/nodes/', views.GraphNodesAPIView.as_view(), name='graph-nodes'),
     path('graph/links/', views.GraphLinksAPIView.as_view(), name='graph-links'),
     path('graph/stats/', views.GraphStatsAPIView.as_view(), name='graph-stats'),
-    
-    # HTML visualization endpoint
-    path('graph/view/', views.GraphVisualizationView.as_view(), name='graph-view'),
 ]

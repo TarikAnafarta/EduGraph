@@ -143,6 +143,10 @@ yarn-error.log*
 .npm
 .eslintcache
 
+# Frontend (Vite) build output
+frontend/dist/
+frontend/.vite/
+
 # Generated files
 *.html.backup
 *.bak
@@ -191,9 +195,11 @@ coverage/
 # Bower dependency directory (https://bower.io/)
 bower_components
 
-# Lock files (keep package.json but ignore lock files)
+# Lock files (ignore globally, re-include frontend's)
 package-lock.json
 yarn.lock
+!frontend/package-lock.json
+!frontend/yarn.lock
 
 # dotenv environment variables file
 .env.local
@@ -225,3 +231,10 @@ secrets.json
 *.tar.gz
 *.rar
 *.7z
+
+# Django collected static and media (generated at runtime)
+staticfiles/
+media/
+
+# Local backups directory
+backups/

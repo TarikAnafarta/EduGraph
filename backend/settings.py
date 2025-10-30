@@ -3,9 +3,9 @@
 Django settings for EduGraph backend.
 """
 
+import os
 from pathlib import Path
 from decouple import config, Csv
-import os
 from dotenv import load_dotenv
 import cloudinary
 load_dotenv()
@@ -87,7 +87,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'frontend' / 'templates'],
+        'DIRS': [],  # no project-level templates (React handles UI)
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,7 +130,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'frontend' / 'static']
+STATICFILES_DIRS = []  # no project static dir; static served by React or collected in STATIC_ROOT if any
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
@@ -153,9 +153,19 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
 }
 
-# CORS settings (for development)
-CORS_ALLOW_ALL_ORIGINS = True  # In production, specify allowed origins
+# CORS settings (dev: allow Vite; prod: restrict origins)
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    config('FRONTEND_ORIGIN', default='http://localhost:5173'),
+    'http://127.0.0.1:5173',
+]
+
+# CSRF settings to trust the frontend origin (only needed if using SessionAuth/CSRF)
+CSRF_TRUSTED_ORIGINS = [
+    config('FRONTEND_ORIGIN', default='http://localhost:5173'),
+    'http://127.0.0.1:5173',
+]
 
 # CSRF settings
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
@@ -164,11 +174,4 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Email settings (for development - console backend)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# For production, use:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
 DEFAULT_FROM_EMAIL = 'noreply@edugraph.com'

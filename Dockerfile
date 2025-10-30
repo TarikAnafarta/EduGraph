@@ -22,7 +22,8 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# Copy backend and shared project files (exclude frontend dev artifacts)
+# Using a .dockerignore to skip node-related content is preferred.
 COPY . /app/
 
 # Create necessary directories

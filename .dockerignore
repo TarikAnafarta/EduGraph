@@ -20,6 +20,8 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -27,6 +29,7 @@ MANIFEST
 
 # Virtual Environment
 venv/
+.venv/
 env/
 ENV/
 env.bak/
@@ -74,3 +77,12 @@ htmlcov/
 backups/
 *.sql
 *.dump
+
+# Frontend - exclude React app and legacy client from backend image context
+frontend/
+client/
+
+# Root node artifacts (if accidentally present)
+node_modules/
+package-lock.json
+yarn.lock
