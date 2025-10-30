@@ -1,34 +1,22 @@
 # EduGraph - Curriculum Learning Graph Visualization
 
-EduGraph is a modular system for visualizing curriculum learning graphs with interactive visualizations. It processes curriculum data from JSON files and creates interactive force-directed graphs showing the relationships between subjects, topics, and learning outcomes.
+EduGraph visualizes curriculum learning graphs with a Django REST API and a React (Vite) frontend.
 
 ## Features
 
-- Interactive D3.js-based graph visualization
-- RESTful API for data access
-- Dynamic force-directed layout with zoom and pan
-- Color coding based on performance scores
-- Support for hierarchical curriculum data
-- Both static HTML and server-based visualization options
+- React SPA (Vite) for UI: auth, dashboard, settings, graph
+- Django + DRF API for graph data and user accounts
+- PostgreSQL via Docker Compose
 
 ## Project Structure
 
-- `backend/` - Django backend with REST API
-- `frontend/` - Static files and templates
-- `shared/` - Curriculum data files
-- `src/` - Core graph processing logic
-- `lib/` - Third-party libraries
+- `backend/` - Django backend (API only)
+- `frontend/` - React app (Vite)
+- `shared/` - Curriculum data (JSON)
+- `src/` - Core graph processing (Python)
+- `nginx/` - Nginx config for prod/proxy
 
-## Technology Stack
-
-- **Backend**: Django, Django REST Framework
-- **Frontend**: D3.js
-- **Data Format**: JSON
-- **Database**: PostgreSQL
-
-## Getting Started
-
-### Docker Setup (Recommended)
+## Quick Start (Docker)
 
 The easiest way to get started. Docker handles all dependencies and database setup automatically.
 
@@ -50,41 +38,21 @@ docker-compose exec web python manage.py createsuperuser
 ```
 
 **Access the application:**
-- Web Application: http://localhost:8000
-- API Endpoints: http://localhost:8000/api/
-- Admin Panel: http://localhost:8000/admin/
-
-For detailed Docker instructions, troubleshooting, and production setup, see **[DOCKER_SETUP.md](DOCKER_SETUP.md)**.
+- API: http://localhost:8000/api/
+- Admin: http://localhost:8000/admin/
+- Frontend: run in frontend/ with npm run dev (or serve separately in prod)
 
 ## Documentation
 
-- **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Complete Docker setup, development tools, production deployment, and troubleshooting
-- **[backend/README.md](backend/README.md)** - Backend API endpoints, Django shell commands, and database queries
-
-## API Endpoints
-
-Once the application is running, you can access:
-
-### Graph Data
-- `GET /api/graph/data/` - Complete graph data (nodes + links)
-- `GET /api/graph/nodes/` - Graph nodes only
-- `GET /api/graph/links/` - Graph connections only
-- `GET /api/graph/stats/` - Graph statistics
-
-### Authentication
-- `POST /api/users/login/` - User login
-- `POST /api/users/register/` - User registration
-- `POST /api/users/verify/` - Email verification
-
-### Views
-- `/dashboard/` - Main dashboard
-- `/graph/` - Interactive graph visualization (also available at `/api/graph/view/`)
-- `/admin/` - Django admin panel (requires superuser)
+- backend/README.md — Backend API and management notes
+- frontend/README.md — Frontend setup (Vite) and project structure
 
 ## License
 
 All rights reserved - see the [LICENSE](LICENSE) file for details.
 
 ### Third-Party Libraries
-- D3.js (BSD License)
-- Django (BSD License)
+- React, React Router, Vite
+- D3.js
+- Django, Django REST Framework
+- Cloudinary (django-cloudinary-storage)
