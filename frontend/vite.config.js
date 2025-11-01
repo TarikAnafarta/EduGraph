@@ -8,11 +8,10 @@ export default defineConfig({
     port: 5173,
     open: true,
     proxy: {
-      // Optional: proxy API during dev if you want to avoid CORS in dev
-      // '/api': {
-      //   target: 'http://localhost:8000',
-      //   changeOrigin: true,
-      // }
-    }
-  }
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

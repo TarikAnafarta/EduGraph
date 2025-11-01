@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Django's command-line utility for administrative tasks."""
+"""Django's command-line utility for administrative tasks.
+Moved into backend/manage.py
+"""
 import os
 import sys
 

@@ -9,7 +9,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.conf import settings
 
+# Import from the top-level src package mounted into the container
 from src import get_graph_data
 
 
@@ -38,8 +40,8 @@ class GraphDataAPIView(APIView):
     def get(self, request):
         try:
             # Load data from the curriculum file
-            data_file = "shared/curriculum/matematik/matematik_kazanimlari_124_154.json"
-            nodes, links = get_graph_data(data_file)
+            data_file = settings.CURRICULUM_DIR / "matematik" / "matematik_kazanimlari_124_154.json"
+            nodes, links = get_graph_data(str(data_file))
             
             # Calculate metadata
             node_types = {}
@@ -103,8 +105,8 @@ class GraphNodesAPIView(APIView):
     
     def get(self, request):
         try:
-            data_file = "shared/curriculum/matematik/matematik_kazanimlari_124_154.json"
-            nodes, _ = get_graph_data(data_file)
+            data_file = settings.CURRICULUM_DIR / "matematik" / "matematik_kazanimlari_124_154.json"
+            nodes, _ = get_graph_data(str(data_file))
             
             # Filter by type if specified
             node_type = request.query_params.get('type')
@@ -151,8 +153,8 @@ class GraphLinksAPIView(APIView):
     
     def get(self, request):
         try:
-            data_file = "shared/curriculum/matematik/matematik_kazanimlari_124_154.json"
-            _, links = get_graph_data(data_file)
+            data_file = settings.CURRICULUM_DIR / "matematik" / "matematik_kazanimlari_124_154.json"
+            _, links = get_graph_data(str(data_file))
             
             return Response(
                 {
@@ -197,8 +199,8 @@ class GraphStatsAPIView(APIView):
     
     def get(self, request):
         try:
-            data_file = "shared/curriculum/matematik/matematik_kazanimlari_124_154.json"
-            nodes, links = get_graph_data(data_file)
+            data_file = settings.CURRICULUM_DIR / "matematik" / "matematik_kazanimlari_124_154.json"
+            nodes, links = get_graph_data(str(data_file))
             
             # Calculate node type distribution
             node_types = {}

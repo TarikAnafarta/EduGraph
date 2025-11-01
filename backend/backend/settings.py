@@ -175,3 +175,6 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # Email settings (for development - console backend)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@edugraph.com'
+
+# Add path for curriculum data files
+CURRICULUM_DIR = BASE_DIR / 'data' / 'curriculum'
